@@ -38,8 +38,12 @@ const Footer = ({ locale = "en", newsletter }: FooterProps) => {
   const links = [
     { href: localizePath("/", locale), label: t.footer.home },
     { href: localizePath("/projects", locale), label: t.nav.projects },
+    { href: localizePath("/developers", locale), label: t.hubs.developersTitle },
+    { href: localizePath("/projects/top", locale), label: t.hubs.topTitle },
+    { href: localizePath("/projects/new", locale), label: t.hubs.newTitle },
     { href: localizePath("/about", locale), label: t.nav.about },
     { href: localizePath("/submit", locale), label: t.nav.submit },
+    { href: localizePath("/hire", locale), label: t.footer.hire },
   ];
 
   return (
@@ -103,6 +107,12 @@ const Footer = ({ locale = "en", newsletter }: FooterProps) => {
             <h3 className="mb-4 text-lg font-bold text-white">{t.footer.newsletterTitle}</h3>
             <p className="mb-4 text-primary-50/90">{t.footer.newsletterBody}</p>
             {newsletter}
+            <a
+              href={localizePath("/rss.xml", locale)}
+              className="hover:text-secondary-300 mt-3 inline-block text-sm text-primary-100/80 transition-colors"
+            >
+              {t.feed.subscribe}
+            </a>
           </div>
         </div>
 
@@ -111,14 +121,18 @@ const Footer = ({ locale = "en", newsletter }: FooterProps) => {
             © 2026 {t.siteName}. {t.footer.rights}{" "}
             <span className="ms-1">
               {t.footer.builtBy}{" "}
+              {/* Cross-brand credit: noopener (not noreferrer) so the referrer +
+                  link equity reach selance.com — an honest attribution link. */}
               <a
                 href={SELANCE_URL}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener"
+                title={t.footer.studioTitle}
                 className="hover:text-secondary-300 font-semibold text-white transition-colors"
               >
                 Selance
               </a>
+              <span className="text-primary-100/70">{t.footer.studioSuffix}</span>
             </span>
           </p>
           <div className="flex flex-wrap gap-4 text-sm text-primary-100/80">

@@ -3,6 +3,16 @@ export const SITE = "https://www.madeinalgeria.dev";
 
 export const SITE_NAME = "Made in Algeria | صُنع في الجزائر";
 
+/**
+ * Default social-share card (1200×630). Pages without their own `image` fall
+ * back to this so every share renders a large card. Ship the PNG at
+ * `public/og-default.png` (a per-project dynamic endpoint can replace it later).
+ */
+export const DEFAULT_OG_IMAGE = "/og-default.png";
+
+/** The studio that builds and operates the directory (footer credit + JSON-LD publisher). */
+export const SELANCE_URL = "https://selance.com";
+
 /** The open-source home. Centralized so the header, contributions section, and footer share one source. */
 export const GITHUB_REPO = "selance/madeinalgeria";
 export const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;

@@ -1,8 +1,10 @@
 ---
 import Base from "../../layouts/Base.astro";
 import ProjectCard, { compactCount } from "../react/ProjectCard";
-import { GITHUB_CONTRIBUTORS_API, GITHUB_URL, SITE, SITE_NAME } from "../../lib/site";
+import BrowseBy from "../BrowseBy.astro";
+import { GITHUB_CONTRIBUTORS_API, GITHUB_URL } from "../../lib/site";
 import { apiGet } from "../../lib/api";
+import { organizationJsonLd, websiteJsonLd } from "../../lib/jsonld";
 import { localizePath, ui, type Locale } from "../../lib/i18n";
 import { buttonVariants, cn } from "@mia/ui";
 import type { OffsetPagination, ProjectLanguageFacet, PublicProject } from "@mia/contracts";
@@ -90,21 +92,7 @@ const stats = [
   description={t.home.description}
   locale={locale}
   canonicalPath={localizePath("/", locale)}
-  jsonLd={[
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: SITE_NAME,
-      url: SITE,
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: SITE_NAME,
-      url: SITE,
-      inLanguage: locale,
-    },
-  ]}
+  jsonLd={[organizationJsonLd(), websiteJsonLd(locale)]}
 >
   {/* Hero — paper surface, faint grain, hairline-framed floating cards */}
   <section class="relative overflow-hidden border-b !border-neutral-200 bg-white">
@@ -328,6 +316,9 @@ const stats = [
       </div>
     </div>
   </section>
+
+  {/* Browse by — the internal-link hub that flattens crawl depth */}
+  <BrowseBy locale={locale} />
 
   {/* Submit band */}
   <section class="mx-auto w-full max-w-7xl px-6 py-16 md:py-20">

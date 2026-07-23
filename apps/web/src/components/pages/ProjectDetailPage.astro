@@ -2,6 +2,8 @@
 import Base from "../../layouts/Base.astro";
 import { compactCount } from "../react/ProjectCard";
 import { localizePath, ui, type Locale } from "../../lib/i18n";
+import { breadcrumbJsonLd, projectJsonLd } from "../../lib/jsonld";
+import { loadCategories, categoryName } from "../../lib/reference";
 import { SITE } from "../../lib/site";
 import { buttonVariants, cn } from "@mia/ui";
 import { formatDateAr } from "@mia/core";
@@ -19,6 +21,32 @@ interface Props {
 
 const { locale, slug, project } = Astro.props;
 const t = ui[locale];
+const sep = locale === "ar" ? "، " : ", ";
+
+// Resolve the project's category (for a breadcrumb + an internal hub link).
+const categories = project?.categoryId ? await loadCategories(Astro.locals.runtime?.env) : [];
+const category = project?.categoryId
+  ? categories.find((c) => c.id === project.categoryId)
+  : undefined;
+const catName = category ? categoryName(category, locale) : null;
+
+const crumbs = project
+  ? [
+      { name: t.breadcrumb.home, path: "/" },
+      { name: t.breadcrumb.projects, path: "/projects" },
+      ...(category && catName
+        ? [{ name: catName, path: `/projects/category/${category.slug}` }]
+        : []),
+      { name: project.name, path: `/projects/${project.slug}` },
+    ]
+  : [];
+
+// README badge embed — an honest backlink from the repo back to its listing.
+const badgeSrc = project ? `${SITE}/badge/${project.slug}.svg` : "";
+const projectUrl = project ? `${SITE}/projects/${project.slug}` : "";
+const badgeMarkdown = project
+  ? `[![Made in Algeria](${badgeSrc})](${projectUrl})`
+  : "";
 
 const description =
   project && locale === "ar" && project.descriptionAr
@@ -30,13 +58,11 @@ const lastPush = project?.repoPushedAt
     : new Date(project.repoPushedAt).toLocaleDateString("en-GB", { dateStyle: "medium" })
   : null;
 
+// Language moves out of the plain facts grid into a linked "browse" chip below.
 const facts: { label: string; value: string }[] = project
   ? [
       { label: t.detail.stars, value: project.stars.toLocaleString("en") },
       { label: t.detail.forks, value: project.forks.toLocaleString("en") },
-      ...(project.primaryLanguage
-        ? [{ label: t.detail.language, value: project.primaryLanguage }]
-        : []),
       ...(project.license ? [{ label: t.detail.license, value: project.license }] : []),
       ...(lastPush ? [{ label: t.detail.lastPush, value: lastPush }] : []),
     ]
@@ -44,22 +70,13 @@ const facts: { label: string; value: string }[] = project
 ---
 
 <Base
-  title={project ? `${project.name} — ${t.siteName}` : `${t.notFound.title} — ${t.siteName}`}
+  title={project ? `${project.name}${sep}${t.siteName}` : `${t.notFound.title}${sep}${t.siteName}`}
   description={project ? description || t.projects.description : t.notFound.body}
   locale={locale}
   canonicalPath={localizePath(`/projects/${slug}`, locale)}
   noindex={!project}
   jsonLd={project
-    ? {
-        "@context": "https://schema.org",
-        "@type": "SoftwareSourceCode",
-        name: project.name,
-        description: description || undefined,
-        codeRepository: project.htmlUrl,
-        programmingLanguage: project.primaryLanguage ?? undefined,
-        url: new URL(localizePath(`/projects/${project.slug}`, locale), SITE).toString(),
-        author: { "@type": "Person", name: project.ownerLogin },
-      }
+    ? [...projectJsonLd(project, description, locale), breadcrumbJsonLd(crumbs, locale)]
     : undefined}
 >
   <section class="mx-auto w-full max-w-4xl px-6 py-10 md:py-14">
@@ -92,10 +109,9 @@ const facts: { label: string; value: string }[] = project
                 </h1>
                 <p class="text-sm text-neutral-500">
                   {t.detail.by}{" "}
+                  {/* Internal profile hub (keeps users on-site + feeds crawl depth). */}
                   <a
-                    href={`https://github.com/${project.ownerLogin}`}
-                    target="_blank"
-                    rel="noreferrer"
+                    href={localizePath(`/developers/${project.ownerLogin}`, locale)}
                     dir="ltr"
                     class="font-semibold text-primary-600 hover:text-primary-700"
                   >
@@ -128,6 +144,32 @@ const facts: { label: string; value: string }[] = project
             <p class="mb-8 max-w-3xl text-lg leading-relaxed text-neutral-600">{description}</p>
           )}
 
+          {/* Browse chips — internal hubs the crawler follows from this spoke. */}
+          {(catName || project.primaryLanguage) && (
+            <div class="mb-8 flex flex-wrap gap-2">
+              {category && catName && (
+                <a
+                  href={localizePath(`/projects/category/${category.slug}`, locale)}
+                  class="bg-primary-50 text-primary-700 hover:bg-primary-100 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors"
+                >
+                  {catName}
+                </a>
+              )}
+              {project.primaryLanguage && (
+                <a
+                  href={localizePath(
+                    `/projects/language/${encodeURIComponent(project.primaryLanguage)}`,
+                    locale,
+                  )}
+                  dir="ltr"
+                  class="rounded-md bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-200"
+                >
+                  {project.primaryLanguage}
+                </a>
+              )}
+            </div>
+          )}
+
           <dl class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
             {facts.map((fact) => (
               <div class="rounded-md bg-neutral-100 p-3">
@@ -144,9 +186,13 @@ const facts: { label: string; value: string }[] = project
               <h2 class="mb-2 text-sm font-semibold text-neutral-500">{t.detail.topics}</h2>
               <div class="flex flex-wrap gap-2">
                 {project.topics.map((topic) => (
-                  <span class="rounded-md bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700">
+                  <a
+                    href={localizePath(`/projects/topic/${encodeURIComponent(topic)}`, locale)}
+                    dir="ltr"
+                    class="bg-primary-50 text-primary-700 hover:bg-primary-100 rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
+                  >
                     {topic}
-                  </span>
+                  </a>
                 ))}
               </div>
             </div>
@@ -173,6 +219,17 @@ const facts: { label: string; value: string }[] = project
                 {t.detail.website}
               </a>
             )}
+          </div>
+
+          {/* Embeddable README badge — a compounding, value-first backlink. */}
+          <div class="mt-10 border-t !border-neutral-200 pt-6">
+            <h2 class="mb-1 text-sm font-semibold text-neutral-500">{t.detail.badgeTitle}</h2>
+            <p class="mb-3 text-sm text-neutral-400">{t.detail.badgeHint}</p>
+            <img src={badgeSrc} alt="Made in Algeria" height="20" class="mb-3" loading="lazy" />
+            <pre
+              dir="ltr"
+              class="overflow-x-auto rounded-md bg-neutral-100 p-3 text-start text-xs text-neutral-700"
+            ><code>{badgeMarkdown}</code></pre>
           </div>
         </article>
       ) : (

@@ -1,0 +1,194 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectCard from "../react/ProjectCard";
+import { collectionPageJsonLd, breadcrumbJsonLd } from "../../lib/jsonld";
+import { localizePath, ui, type Locale } from "../../lib/i18n";
+import type { OffsetPagination, PublicProject } from "@mia/contracts";
+
+/**
+ * Shared layout for every programmatic hub (category, language, topic, curated,
+ * developer). Server-renders a real grid of ProjectCards with breadcrumb +
+ * prev/next links (crawlable, no island needed) and emits CollectionPage +
+ * BreadcrumbList JSON-LD. Pages above it only resolve their filter + fetch.
+ */
+
+interface Crumb {
+  name: string;
+  path: string;
+}
+
+interface Props {
+  locale: Locale;
+  /** <title> and og:title (already includes the site name). */
+  title: string;
+  /** Meta description. */
+  description: string;
+  /** Visible H1. */
+  heading: string;
+  /** Optional lead paragraph under the H1. */
+  intro?: string;
+  /** Canonical + pager base path (no query), e.g. "/projects/category/web". */
+  path: string;
+  /** Breadcrumb trail ending at this page. */
+  crumbs: Crumb[];
+  projects: PublicProject[];
+  pagination: OffsetPagination;
+  /** Category name shown on each card, when known (id → name map). */
+  categoryNames?: Record<number, string>;
+  /** Developer pages: an avatar + GitHub-link header above the grid. */
+  ownerHeader?: {
+    login: string;
+    avatarUrl: string | null;
+    githubUrl: string;
+  };
+  /** Override the CollectionPage JSON-LD node (e.g. ProfilePage for developers). */
+  structuredData?: Record<string, unknown>;
+}
+
+const {
+  locale,
+  title,
+  description,
+  heading,
+  intro,
+  path,
+  crumbs,
+  projects,
+  pagination,
+  categoryNames = {},
+  ownerHeader,
+  structuredData,
+} = Astro.props;
+
+const t = ui[locale];
+const localizedPath = localizePath(path, locale);
+const { page, total_pages } = pagination;
+const pageUrl = (n: number) => `${localizedPath}?page=${n}`;
+---
+
+<Base
+  title={title}
+  description={description}
+  locale={locale}
+  canonicalPath={localizedPath}
+  jsonLd={[
+    structuredData ?? collectionPageJsonLd({ name: title, description, path, locale, projects }),
+    breadcrumbJsonLd(crumbs, locale),
+  ]}
+>
+  <section class="mx-auto w-full max-w-7xl px-6 py-10 md:py-14">
+    {/* Breadcrumb */}
+    <nav aria-label="breadcrumb" class="mb-6 text-sm text-neutral-500">
+      <ol class="flex flex-wrap items-center gap-1.5">
+        {
+          crumbs.map((c, i) => (
+            <li class="flex items-center gap-1.5">
+              {i > 0 && <span aria-hidden>/</span>}
+              {i < crumbs.length - 1 ? (
+                <a
+                  href={localizePath(c.path, locale)}
+                  class="hover:text-primary-600 transition-colors"
+                >
+                  {c.name}
+                </a>
+              ) : (
+                <span class="text-neutral-700">{c.name}</span>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+
+    <div class="mb-8">
+      <h1 class="mb-2 text-3xl font-extrabold text-neutral-900 md:text-4xl">{heading}</h1>
+      {intro && <p class="max-w-2xl text-neutral-500">{intro}</p>}
+      {
+        pagination.total_count > 0 && (
+          <p class="mt-2 text-sm text-neutral-400">{t.projects.resultCount(pagination.total_count)}</p>
+        )
+      }
+    </div>
+
+    {
+      ownerHeader && (
+        <div class="mb-8 flex items-center gap-4">
+          {ownerHeader.avatarUrl ? (
+            <img
+              src={ownerHeader.avatarUrl}
+              alt=""
+              class="size-16 rounded-full border !border-neutral-200"
+            />
+          ) : (
+            <span class="bg-primary-50 text-primary-600 flex size-16 items-center justify-center rounded-full text-2xl font-bold">
+              {ownerHeader.login.charAt(0).toUpperCase()}
+            </span>
+          )}
+          <a
+            href={ownerHeader.githubUrl}
+            target="_blank"
+            rel="noopener"
+            dir="ltr"
+            class="text-primary-600 hover:text-primary-700 font-semibold"
+          >
+            {t.hubs.viewProfile}
+          </a>
+        </div>
+      )
+    }
+
+    {
+      projects.length > 0 ? (
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <ProjectCard
+              project={project}
+              locale={locale}
+              categoryName={project.categoryId ? categoryNames[project.categoryId] : undefined}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="rounded-card border !border-neutral-200 bg-white p-14 text-center">
+          <p class="mb-6 text-neutral-500">{t.hubs.empty}</p>
+          <a
+            href={localizePath("/projects", locale)}
+            class="text-primary-600 hover:text-primary-700 font-semibold"
+          >
+            {t.hubs.viewAll}
+          </a>
+        </div>
+      )
+    }
+
+    {
+      total_pages > 1 && (
+        <nav class="mt-10 flex items-center justify-center gap-4" aria-label="pagination">
+          {page > 1 ? (
+            <a
+              href={pageUrl(page - 1)}
+              rel="prev"
+              class="text-primary-600 hover:text-primary-700 font-semibold"
+            >
+              {t.projects.pagePrev}
+            </a>
+          ) : (
+            <span class="text-neutral-300">{t.projects.pagePrev}</span>
+          )}
+          <span class="text-sm text-neutral-500">{t.projects.pageOf(page, total_pages)}</span>
+          {page < total_pages ? (
+            <a
+              href={pageUrl(page + 1)}
+              rel="next"
+              class="text-primary-600 hover:text-primary-700 font-semibold"
+            >
+              {t.projects.pageNext}
+            </a>
+          ) : (
+            <span class="text-neutral-300">{t.projects.pageNext}</span>
+          )}
+        </nav>
+      )
+    }
+  </section>
+</Base>

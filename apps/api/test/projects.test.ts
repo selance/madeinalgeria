@@ -28,14 +28,18 @@ async function seedProject(input: {
   language?: string | null;
   featured?: boolean;
   pushedDaysAgo?: number;
+  topics?: string[];
+  approvedDaysAgo?: number;
 }) {
   const now = Math.floor(Date.now() / 1000);
   const pushedAt = now - (input.pushedDaysAgo ?? 30) * 24 * 60 * 60;
+  const approvedAt =
+    input.approvedDaysAgo !== undefined ? now - input.approvedDaysAgo * 24 * 60 * 60 : null;
   await env.DB_CORE.prepare(
     `INSERT INTO projects
      (slug, repo_full_name, name, html_url, stars, primary_language, owner_login,
-      status, is_featured, source, repo_pushed_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'seed', ?, ?, ?)`,
+      status, is_featured, source, topics, repo_pushed_at, approved_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'seed', ?, ?, ?, ?, ?)`,
   )
     .bind(
       input.slug,
@@ -47,7 +51,9 @@ async function seedProject(input: {
       input.repoFullName.split("/")[0],
       input.status ?? "approved",
       input.featured ? 1 : 0,
+      input.topics ? JSON.stringify(input.topics) : null,
       pushedAt,
+      approvedAt,
       now,
       now,
     )
@@ -144,6 +150,66 @@ describe("public directory (/v1/projects)", () => {
       data: { languages: { name: string; count: number }[] };
     };
     expect(facetsData.data.languages).toEqual([{ name: "Python", count: 2 }]);
+  });
+});
+
+describe("discovery surface (sitemap / feed / owner / topic facets)", () => {
+  it("lists every approved slug for the sitemap, excluding non-approved rows", async () => {
+    await seedProject({ slug: "one", repoFullName: "a/one" });
+    await seedProject({ slug: "two", repoFullName: "a/two" });
+    await seedProject({ slug: "pending", repoFullName: "a/pending", status: "pending" });
+
+    const res = await app.request("/v1/projects/sitemap", {}, env);
+    expect(res.status).toBe(200);
+    const { data } = (await res.json()) as { data: { slug: string; lastmod: string }[] };
+    expect(data.map((e) => e.slug).sort()).toEqual(["one", "two"]);
+    expect(typeof data[0]?.lastmod).toBe("string");
+  });
+
+  it("returns the newest-approved feed, bounded by limit", async () => {
+    await seedProject({ slug: "older", repoFullName: "a/older", approvedDaysAgo: 10 });
+    await seedProject({ slug: "newer", repoFullName: "a/newer", approvedDaysAgo: 1 });
+
+    const res = await app.request("/v1/projects/feed?limit=1", {}, env);
+    expect(res.status).toBe(200);
+    const { data } = (await res.json()) as { data: { items: { slug: string }[] } };
+    expect(data.items).toHaveLength(1);
+    expect(data.items[0]?.slug).toBe("newer");
+  });
+
+  it("filters by owner and by topic", async () => {
+    await seedProject({ slug: "amine-a", repoFullName: "amine/a", topics: ["cli", "rust"] });
+    await seedProject({ slug: "amine-b", repoFullName: "amine/b", topics: ["web"] });
+    await seedProject({ slug: "sara-c", repoFullName: "sara/c", topics: ["cli"] });
+
+    const byOwner = await app.request("/v1/projects?owner=amine", {}, env);
+    const ownerData = (await byOwner.json()) as { data: { items: { slug: string }[] } };
+    expect(ownerData.data.items.map((i) => i.slug).sort()).toEqual(["amine-a", "amine-b"]);
+
+    const byTopic = await app.request("/v1/projects?topic=cli", {}, env);
+    const topicData = (await byTopic.json()) as { data: { items: { slug: string }[] } };
+    expect(topicData.data.items.map((i) => i.slug).sort()).toEqual(["amine-a", "sara-c"]);
+  });
+
+  it("aggregates owner and topic facets over approved rows", async () => {
+    await seedProject({ slug: "amine-a", repoFullName: "amine/a", topics: ["cli", "web"] });
+    await seedProject({ slug: "amine-b", repoFullName: "amine/b", topics: ["cli"] });
+    await seedProject({ slug: "sara-c", repoFullName: "sara/c", topics: ["web"] });
+
+    const owners = await app.request("/v1/projects/facets/owners", {}, env);
+    const ownerData = (await owners.json()) as {
+      data: { owners: { login: string; count: number }[] };
+    };
+    expect(ownerData.data.owners[0]).toMatchObject({ login: "amine", count: 2 });
+
+    const topics = await app.request("/v1/projects/facets/topics", {}, env);
+    const topicData = (await topics.json()) as {
+      data: { topics: { topic: string; count: number }[] };
+    };
+    expect(topicData.data.topics).toEqual([
+      { topic: "cli", count: 2 },
+      { topic: "web", count: 2 },
+    ]);
   });
 });
 

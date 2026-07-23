@@ -64,5 +64,9 @@ export const projects = sqliteTable(
     index("projects_status_stars_idx").on(t.status, t.stars),
     index("projects_status_language_idx").on(t.status, t.primaryLanguage),
     index("projects_status_category_idx").on(t.status, t.categoryId),
+    // Developer-profile filter (?owner=) and "recently added" sort/feed each get
+    // their own composite so the new programmatic pages stay keyed at scale.
+    index("projects_status_owner_idx").on(t.status, t.ownerLogin),
+    index("projects_status_approved_idx").on(t.status, t.approvedAt),
   ],
 );

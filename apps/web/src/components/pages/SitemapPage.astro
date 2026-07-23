@@ -1,0 +1,154 @@
+---
+import Base from "../../layouts/Base.astro";
+import { apiGet } from "../../lib/api";
+import { loadCategories, categoryName } from "../../lib/reference";
+import { breadcrumbJsonLd } from "../../lib/jsonld";
+import { localizePath, ui, type Locale } from "../../lib/i18n";
+import type {
+  ProjectLanguageFacet,
+  ProjectOwnerFacet,
+  ProjectTopicFacet,
+} from "@mia/contracts";
+
+/**
+ * Human-readable sitemap — one dense page linking every category, language,
+ * topic and developer, so a crawler reaches the whole directory in two clicks.
+ * Distinct from /sitemap.xml (the machine sitemap for search engines).
+ */
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = ui[locale];
+const sep = locale === "ar" ? "، " : ", ";
+const env = Astro.locals.runtime?.env;
+
+const [categories, langRes, topicRes, ownerRes] = await Promise.all([
+  loadCategories(env),
+  apiGet<{ languages: ProjectLanguageFacet[] }>(env, "/v1/projects/facets"),
+  apiGet<{ topics: ProjectTopicFacet[] }>(env, "/v1/projects/facets/topics"),
+  apiGet<{ owners: ProjectOwnerFacet[] }>(env, "/v1/projects/facets/owners"),
+]);
+const languages = langRes.data?.languages ?? [];
+const topics = topicRes.data?.topics ?? [];
+const developers = ownerRes.data?.owners ?? [];
+
+const mainLinks = [
+  { href: localizePath("/", locale), label: t.footer.home },
+  { href: localizePath("/projects", locale), label: t.nav.projects },
+  { href: localizePath("/projects/top", locale), label: t.hubs.topTitle },
+  { href: localizePath("/projects/new", locale), label: t.hubs.newTitle },
+  { href: localizePath("/developers", locale), label: t.hubs.developersTitle },
+  { href: localizePath("/about", locale), label: t.nav.about },
+  { href: localizePath("/submit", locale), label: t.nav.submit },
+];
+
+const linkClass = "text-primary-600 hover:text-primary-700 hover:underline";
+const crumbs = [
+  { name: t.breadcrumb.home, path: "/" },
+  { name: t.hubs.viewAll, path: "/sitemap" },
+];
+---
+
+<Base
+  title={`${t.footer.linksTitle}${sep}${t.siteName}`}
+  description={t.hubs.browseBody}
+  locale={locale}
+  canonicalPath={localizePath("/sitemap", locale)}
+  jsonLd={breadcrumbJsonLd(crumbs, locale)}
+>
+  <section class="mx-auto w-full max-w-5xl px-6 py-10 md:py-14">
+    <h1 class="mb-8 text-3xl font-extrabold text-neutral-900 md:text-4xl">{t.hubs.browseTitle}</h1>
+
+    <div class="flex flex-col gap-10">
+      <div>
+        <h2 class="mb-3 text-lg font-bold text-neutral-900">{t.footer.linksTitle}</h2>
+        <ul class="flex flex-wrap gap-x-6 gap-y-2">
+          {mainLinks.map((l) => (
+            <li>
+              <a href={l.href} class={linkClass}>
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {
+        categories.length > 0 && (
+          <div>
+            <h2 class="mb-3 text-lg font-bold text-neutral-900">{t.hubs.categoriesTitle}</h2>
+            <ul class="flex flex-wrap gap-x-6 gap-y-2">
+              {categories.map((c) => (
+                <li>
+                  <a href={localizePath(`/projects/category/${c.slug}`, locale)} class={linkClass}>
+                    {categoryName(c, locale)}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      {
+        languages.length > 0 && (
+          <div>
+            <h2 class="mb-3 text-lg font-bold text-neutral-900">{t.hubs.languagesTitle}</h2>
+            <ul class="flex flex-wrap gap-x-6 gap-y-2">
+              {languages.map((l) => (
+                <li>
+                  <a
+                    href={localizePath(`/projects/language/${encodeURIComponent(l.name)}`, locale)}
+                    dir="ltr"
+                    class={linkClass}
+                  >
+                    {l.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      {
+        developers.length > 0 && (
+          <div>
+            <h2 class="mb-3 text-lg font-bold text-neutral-900">{t.hubs.developersTitle}</h2>
+            <ul class="flex flex-wrap gap-x-6 gap-y-2">
+              {developers.map((d) => (
+                <li>
+                  <a href={localizePath(`/developers/${d.login}`, locale)} dir="ltr" class={linkClass}>
+                    @{d.login}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      {
+        topics.length > 0 && (
+          <div>
+            <h2 class="mb-3 text-lg font-bold text-neutral-900">{t.hubs.topicsTitle}</h2>
+            <ul class="flex flex-wrap gap-x-4 gap-y-2">
+              {topics.map((tp) => (
+                <li>
+                  <a
+                    href={localizePath(`/projects/topic/${encodeURIComponent(tp.topic)}`, locale)}
+                    dir="ltr"
+                    class={linkClass}
+                  >
+                    {tp.topic}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</Base>

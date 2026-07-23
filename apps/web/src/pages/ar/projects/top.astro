@@ -1,0 +1,9 @@
+---
+import HubListPage from "../../../components/pages/HubListPage.astro";
+import { loadCuratedList, pageParam } from "../../../lib/hub";
+export const prerender = false;
+
+const view = await loadCuratedList(Astro.locals.runtime?.env, "ar", "top", pageParam(Astro.url));
+---
+
+<HubListPage {...view} />

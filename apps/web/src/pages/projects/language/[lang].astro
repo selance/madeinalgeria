@@ -1,0 +1,16 @@
+---
+import HubListPage from "../../../components/pages/HubListPage.astro";
+import HubNotFound from "../../../components/pages/HubNotFound.astro";
+import { loadLanguageHub, pageParam } from "../../../lib/hub";
+export const prerender = false;
+
+const view = await loadLanguageHub(
+  Astro.locals.runtime?.env,
+  "en",
+  Astro.params.lang ?? "",
+  pageParam(Astro.url),
+);
+if (!view) Astro.response.status = 404;
+---
+
+{view ? <HubListPage {...view} /> : <HubNotFound locale="en" />}

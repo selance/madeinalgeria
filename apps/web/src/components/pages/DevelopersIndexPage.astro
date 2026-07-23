@@ -1,0 +1,88 @@
+---
+import Base from "../../layouts/Base.astro";
+import { apiGet } from "../../lib/api";
+import { breadcrumbJsonLd } from "../../lib/jsonld";
+import { localizePath, ui, type Locale } from "../../lib/i18n";
+import type { ProjectOwnerFacet } from "@mia/contracts";
+
+/**
+ * Developers directory — the crawl hub that links every /developers/[login]
+ * profile. Server-rendered grid of owner cards from the owner facets endpoint.
+ */
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = ui[locale];
+const numLocale = locale === "ar" ? "ar-DZ" : "en";
+const sep = locale === "ar" ? "، " : ", ";
+const env = Astro.locals.runtime?.env;
+
+const res = await apiGet<{ owners: ProjectOwnerFacet[] }>(env, "/v1/projects/facets/owners");
+const owners = res.data?.owners ?? [];
+
+const crumbs = [
+  { name: t.breadcrumb.home, path: "/" },
+  { name: t.breadcrumb.developers, path: "/developers" },
+];
+---
+
+<Base
+  title={`${t.hubs.developersHeading}${sep}${t.siteName}`}
+  description={t.hubs.developersIntro}
+  locale={locale}
+  canonicalPath={localizePath("/developers", locale)}
+  jsonLd={breadcrumbJsonLd(crumbs, locale)}
+>
+  <section class="mx-auto w-full max-w-7xl px-6 py-10 md:py-14">
+    <div class="mb-8">
+      <h1 class="mb-2 text-3xl font-extrabold text-neutral-900 md:text-4xl">
+        {t.hubs.developersHeading}
+      </h1>
+      <p class="max-w-2xl text-neutral-500">{t.hubs.developersIntro}</p>
+    </div>
+
+    {
+      owners.length > 0 ? (
+        <ul class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {owners.map((owner) => (
+            <li>
+              <a
+                href={localizePath(`/developers/${owner.login}`, locale)}
+                class="rounded-card group flex flex-col items-center gap-3 border !border-neutral-200 bg-white p-5 text-center transition-colors hover:!border-primary-300"
+              >
+                {owner.avatarUrl ? (
+                  <img
+                    src={owner.avatarUrl}
+                    alt=""
+                    loading="lazy"
+                    class="size-16 rounded-full border !border-neutral-200"
+                  />
+                ) : (
+                  <span class="bg-primary-50 text-primary-600 flex size-16 items-center justify-center rounded-full text-xl font-bold">
+                    {owner.login.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span class="min-w-0">
+                  <span
+                    dir="ltr"
+                    class="block truncate font-bold text-neutral-900 group-hover:text-primary-600"
+                  >
+                    {owner.login}
+                  </span>
+                  <span class="text-xs text-neutral-400">
+                    {owner.count.toLocaleString(numLocale)} {t.hubs.projectsWord}
+                  </span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="rounded-card border !border-neutral-200 bg-white p-14 text-center">
+          <p class="text-neutral-500">{t.hubs.empty}</p>
+        </div>
+      )
+    }
+  </section>
+</Base>

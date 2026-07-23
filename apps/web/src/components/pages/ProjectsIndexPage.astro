@@ -1,7 +1,9 @@
 ---
 import Base from "../../layouts/Base.astro";
 import ProjectsExplorer, { type CategoryOption } from "../react/ProjectsExplorer";
+import BrowseBy from "../BrowseBy.astro";
 import { apiGet } from "../../lib/api";
+import { collectionPageJsonLd } from "../../lib/jsonld";
 import { localizePath, ui, type Locale } from "../../lib/i18n";
 import type {
   CategoryItem,
@@ -59,10 +61,17 @@ const categories: CategoryOption[] = (categoriesRes.data ?? [])
 ---
 
 <Base
-  title={`${t.projects.title} — ${t.siteName}`}
+  title={`${t.projects.title}${locale === "ar" ? "، " : ", "}${t.siteName}`}
   description={t.projects.description}
   locale={locale}
   canonicalPath={localizePath("/projects", locale)}
+  jsonLd={collectionPageJsonLd({
+    name: `${t.projects.title}${locale === "ar" ? "، " : ", "}${t.siteName}`,
+    description: t.projects.description,
+    path: "/projects",
+    locale,
+    projects: initial.items,
+  })}
 >
   <section class="mx-auto w-full max-w-7xl px-6 py-10 md:py-14">
     <div class="mb-8">
@@ -80,4 +89,6 @@ const categories: CategoryOption[] = (categoriesRes.data ?? [])
       initialQuery={initialQuery}
     />
   </section>
+
+  <BrowseBy locale={locale} />
 </Base>

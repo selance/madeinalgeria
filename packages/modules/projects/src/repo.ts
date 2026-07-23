@@ -1,6 +1,11 @@
-import { and, asc, count, desc, eq, like, or, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, like, or, sql, type SQL } from "drizzle-orm";
 import { schema, type DbCore } from "@mia/db-core";
-import type { ListAdminProjectsQuery, ListProjectsQuery, ProjectLanguageFacet } from "@mia/contracts";
+import type {
+  ListAdminProjectsQuery,
+  ListProjectsQuery,
+  ProjectLanguageFacet,
+  ProjectOwnerFacet,
+} from "@mia/contracts";
 
 /**
  * The ONLY file in this module that touches @mia/db-core. Lists are offset +
@@ -29,6 +34,14 @@ function orderFor(sort: ListProjectsQuery["sort"]): SQL[] {
       return [desc(schema.projects.repoPushedAt), desc(schema.projects.id)];
     case "name":
       return [asc(schema.projects.name), asc(schema.projects.id)];
+    case "new":
+      // "Recently added to the directory": approvedAt leads (nulls sort last in
+      // DESC), createdAt breaks ties for older rows that predate approvedAt.
+      return [
+        desc(schema.projects.approvedAt),
+        desc(schema.projects.createdAt),
+        desc(schema.projects.id),
+      ];
     case "stars":
       return [desc(schema.projects.stars), desc(schema.projects.id)];
   }
@@ -46,6 +59,10 @@ export class ProjectsRepo {
     }
     if (query.language) conditions.push(eq(p().primaryLanguage, query.language));
     if (query.categoryId !== undefined) conditions.push(eq(p().categoryId, query.categoryId));
+    if (query.owner) conditions.push(eq(p().ownerLogin, query.owner));
+    // topics is a JSON string array; match the quoted token so "cli" doesn't
+    // also hit "client". Precise json_each filtering is a later optimization.
+    if (query.topic) conditions.push(like(p().topics, `%"${query.topic}"%`));
     const where = and(...conditions);
 
     const [items, [total]] = await Promise.all([
@@ -95,6 +112,54 @@ export class ProjectsRepo {
       .where(eq(p().status, "approved"))
       .all();
     return rows.map((r) => r.slug);
+  }
+
+  /** Every approved slug + its freshest timestamp, for <lastmod> in the sitemap. */
+  async listApprovedForSitemap(): Promise<
+    { slug: string; repoPushedAt: Date | null; updatedAt: Date }[]
+  > {
+    return this.db
+      .select({ slug: p().slug, repoPushedAt: p().repoPushedAt, updatedAt: p().updatedAt })
+      .from(p())
+      .where(eq(p().status, "approved"))
+      .orderBy(desc(p().stars), desc(p().id))
+      .all();
+  }
+
+  /** Newest approved rows first, for the RSS feed and the "recently added" page. */
+  async listRecentApproved(limit: number): Promise<ProjectRow[]> {
+    return this.db
+      .select()
+      .from(p())
+      .where(eq(p().status, "approved"))
+      .orderBy(...orderFor("new"))
+      .limit(limit)
+      .all();
+  }
+
+  /** Distinct owners of approved projects (avatar + count), most projects first. */
+  async ownerFacets(): Promise<ProjectOwnerFacet[]> {
+    return this.db
+      .select({
+        login: p().ownerLogin,
+        avatarUrl: sql<string | null>`max(${p().ownerAvatarUrl})`,
+        count: count(),
+      })
+      .from(p())
+      .where(eq(p().status, "approved"))
+      .groupBy(p().ownerLogin)
+      .orderBy(desc(count()), asc(p().ownerLogin))
+      .all();
+  }
+
+  /** All approved rows' topics arrays — the service tallies them into facets. */
+  async listApprovedTopics(): Promise<string[][]> {
+    const rows = await this.db
+      .select({ topics: p().topics })
+      .from(p())
+      .where(eq(p().status, "approved"))
+      .all();
+    return rows.map((r) => r.topics ?? []);
   }
 
   // ── Submission path ───────────────────────────────────────────────────

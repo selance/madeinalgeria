@@ -6,8 +6,11 @@ import type {
   ListProjectsQuery,
   OffsetPagination,
   ProjectLanguageFacet,
+  ProjectOwnerFacet,
+  ProjectTopicFacet,
   PublicProject,
   ReviewProject,
+  SitemapEntry,
   SubmitProject,
   UpdateProject,
 } from "@mia/contracts";
@@ -100,6 +103,40 @@ export class ProjectsService {
 
   facets(): Promise<ProjectLanguageFacet[]> {
     return this.cached("facets", () => this.repo.languageFacets());
+  }
+
+  ownerFacets(): Promise<ProjectOwnerFacet[]> {
+    return this.cached("facets:owners", () => this.repo.ownerFacets());
+  }
+
+  /** Topic facets, tallied from the approved rows' JSON arrays, most common first. */
+  topicFacets(): Promise<ProjectTopicFacet[]> {
+    return this.cached("facets:topics", async () => {
+      const counts = new Map<string, number>();
+      for (const topics of await this.repo.listApprovedTopics()) {
+        for (const topic of topics) counts.set(topic, (counts.get(topic) ?? 0) + 1);
+      }
+      return [...counts.entries()]
+        .map(([topic, count]) => ({ topic, count }))
+        .sort((a, b) => b.count - a.count || a.topic.localeCompare(b.topic));
+    });
+  }
+
+  /** Every approved slug + ISO lastmod, for the XML sitemap. */
+  sitemap(): Promise<SitemapEntry[]> {
+    return this.cached("sitemap", async () =>
+      (await this.repo.listApprovedForSitemap()).map((r) => ({
+        slug: r.slug,
+        lastmod: (r.repoPushedAt ?? r.updatedAt).toISOString(),
+      })),
+    );
+  }
+
+  /** Newest approved projects, for the RSS feed and the "recently added" page. */
+  feed(limit: number): Promise<PublicProject[]> {
+    return this.cached(`feed:${limit}`, async () =>
+      (await this.repo.listRecentApproved(limit)).map((row) => toPublicProject(row)),
+    );
   }
 
   async detail(slug: string): Promise<PublicProject> {

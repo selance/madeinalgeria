@@ -1,6 +1,10 @@
 import { Hono, type Context } from "hono";
 import { AppError } from "@mia/core";
-import { listProjectsQuerySchema, submitProjectSchema } from "@mia/contracts";
+import {
+  listProjectsQuerySchema,
+  projectsFeedQuerySchema,
+  submitProjectSchema,
+} from "@mia/contracts";
 import type { ProjectsService } from "./service";
 import type { z } from "zod";
 
@@ -35,6 +39,20 @@ export function createProjectsRouter({ getService }: ProjectsRouterDeps) {
   // Literal routes before /:slug.
   router.get("/featured", async (c) => c.json({ data: await getService(c).featured() }));
   router.get("/facets", async (c) => c.json({ data: { languages: await getService(c).facets() } }));
+  router.get("/facets/owners", async (c) =>
+    c.json({ data: { owners: await getService(c).ownerFacets() } }),
+  );
+  router.get("/facets/topics", async (c) =>
+    c.json({ data: { topics: await getService(c).topicFacets() } }),
+  );
+
+  // Discovery/exposure feeds — consumed by the Astro sitemap + RSS endpoints.
+  router.get("/sitemap", async (c) => c.json({ data: await getService(c).sitemap() }));
+  router.get("/feed", async (c) => {
+    const parsed = projectsFeedQuerySchema.safeParse(c.req.query());
+    if (!parsed.success) throw AppError.badRequest("Validation failed", parsed.error.issues);
+    return c.json({ data: { items: await getService(c).feed(parsed.data.limit) } });
+  });
 
   router.post("/submit", async (c) => {
     const input = await parseBody(c, submitProjectSchema);

@@ -10,18 +10,28 @@ import { z } from "zod";
 export const projectStatusSchema = z.enum(["pending", "approved", "rejected"]);
 export type ProjectStatusValue = z.infer<typeof projectStatusSchema>;
 
-export const projectSortSchema = z.enum(["stars", "recent", "name"]);
+export const projectSortSchema = z.enum(["stars", "recent", "name", "new"]);
 export type ProjectSort = z.infer<typeof projectSortSchema>;
 
 export const listProjectsQuerySchema = z.object({
   q: z.string().trim().max(80).optional(),
   language: z.string().trim().max(60).optional(),
   categoryId: z.coerce.number().int().positive().optional(),
+  /** Filter to one GitHub owner login — powers /developers/[login] pages. */
+  owner: z.string().trim().max(80).optional(),
+  /** Filter to one repo topic — powers /projects/topic/[topic] pages. */
+  topic: z.string().trim().max(60).optional(),
   sort: projectSortSchema.default("stars"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(24),
 });
 export type ListProjectsQuery = z.infer<typeof listProjectsQuerySchema>;
+
+/** Feed/list "how many" — bounded so the RSS + recent endpoints stay cheap. */
+export const projectsFeedQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(30),
+});
+export type ProjectsFeedQuery = z.infer<typeof projectsFeedQuerySchema>;
 
 export const listAdminProjectsQuerySchema = z.object({
   status: projectStatusSchema.optional(),
@@ -91,6 +101,25 @@ export interface PublicProject {
 export interface ProjectLanguageFacet {
   name: string;
   count: number;
+}
+
+/** One approved GitHub owner and how many of their projects are listed. */
+export interface ProjectOwnerFacet {
+  login: string;
+  avatarUrl: string | null;
+  count: number;
+}
+
+/** One repo topic and how many approved projects carry it. */
+export interface ProjectTopicFacet {
+  topic: string;
+  count: number;
+}
+
+/** A single sitemap row: the slug + an ISO lastmod (freshest known timestamp). */
+export interface SitemapEntry {
+  slug: string;
+  lastmod: string;
 }
 
 export interface OffsetPagination {

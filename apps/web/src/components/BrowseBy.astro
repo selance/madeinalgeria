@@ -1,0 +1,140 @@
+---
+import { apiGet } from "../lib/api";
+import { loadCategories, categoryName } from "../lib/reference";
+import { localizePath, ui, type Locale } from "../lib/i18n";
+import type {
+  ProjectLanguageFacet,
+  ProjectOwnerFacet,
+  ProjectTopicFacet,
+} from "@mia/contracts";
+
+/**
+ * "Browse the directory" — the internal-link hub that flattens crawl depth: it
+ * links every category, top languages/topics, and top developers from one
+ * section. Rendered on the home page and the projects index. All fetches are
+ * KV-cached upstream and failure-tolerant (a missing group just doesn't render).
+ */
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = ui[locale];
+const env = Astro.locals.runtime?.env;
+
+const [categories, langRes, topicRes, ownerRes] = await Promise.all([
+  loadCategories(env),
+  apiGet<{ languages: ProjectLanguageFacet[] }>(env, "/v1/projects/facets"),
+  apiGet<{ topics: ProjectTopicFacet[] }>(env, "/v1/projects/facets/topics"),
+  apiGet<{ owners: ProjectOwnerFacet[] }>(env, "/v1/projects/facets/owners"),
+]);
+
+const languages = (langRes.data?.languages ?? []).slice(0, 12);
+const topics = (topicRes.data?.topics ?? []).slice(0, 16);
+const developers = (ownerRes.data?.owners ?? []).slice(0, 10);
+
+const chip =
+  "rounded-md border !border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 transition-colors hover:!border-primary-300 hover:text-primary-600";
+---
+
+<section class="mx-auto w-full max-w-7xl px-6 py-12 md:py-16">
+  <div class="mb-8 max-w-2xl">
+    <h2 class="mb-2 text-2xl font-bold text-neutral-900 md:text-3xl">{t.hubs.browseTitle}</h2>
+    <p class="text-neutral-500">{t.hubs.browseBody}</p>
+  </div>
+
+  <div class="flex flex-col gap-8">
+    {
+      categories.length > 0 && (
+        <div>
+          <h3 class="mb-3 text-sm font-semibold text-neutral-500">{t.hubs.byCategory}</h3>
+          <div class="flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <a href={localizePath(`/projects/category/${c.slug}`, locale)} class={chip}>
+                {categoryName(c, locale)}
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      languages.length > 0 && (
+        <div>
+          <h3 class="mb-3 text-sm font-semibold text-neutral-500">{t.hubs.byLanguage}</h3>
+          <div class="flex flex-wrap gap-2">
+            {languages.map((l) => (
+              <a
+                href={localizePath(`/projects/language/${encodeURIComponent(l.name)}`, locale)}
+                dir="ltr"
+                class={chip}
+              >
+                {l.name}
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      topics.length > 0 && (
+        <div>
+          <h3 class="mb-3 text-sm font-semibold text-neutral-500">{t.hubs.byTopic}</h3>
+          <div class="flex flex-wrap gap-2">
+            {topics.map((tp) => (
+              <a
+                href={localizePath(`/projects/topic/${encodeURIComponent(tp.topic)}`, locale)}
+                dir="ltr"
+                class={chip}
+              >
+                {tp.topic}
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      developers.length > 0 && (
+        <div>
+          <h3 class="mb-3 text-sm font-semibold text-neutral-500">{t.hubs.byDeveloper}</h3>
+          <div class="flex flex-wrap gap-2">
+            {developers.map((d) => (
+              <a href={localizePath(`/developers/${d.login}`, locale)} dir="ltr" class={chip}>
+                @{d.login}
+              </a>
+            ))}
+            <a href={localizePath("/developers", locale)} class={chip}>
+              {t.hubs.viewAll}
+            </a>
+          </div>
+        </div>
+      )
+    }
+
+    <div class="flex flex-wrap gap-3 border-t !border-neutral-200 pt-6">
+      <a
+        href={localizePath("/projects/top", locale)}
+        class="text-primary-600 hover:text-primary-700 text-sm font-semibold"
+      >
+        {t.hubs.topTitle}
+      </a>
+      <span aria-hidden class="text-neutral-300">·</span>
+      <a
+        href={localizePath("/projects/new", locale)}
+        class="text-primary-600 hover:text-primary-700 text-sm font-semibold"
+      >
+        {t.hubs.newTitle}
+      </a>
+      <span aria-hidden class="text-neutral-300">·</span>
+      <a
+        href={localizePath("/projects", locale)}
+        class="text-primary-600 hover:text-primary-700 text-sm font-semibold"
+      >
+        {t.hubs.viewAll}
+      </a>
+    </div>
+  </div>
+</section>

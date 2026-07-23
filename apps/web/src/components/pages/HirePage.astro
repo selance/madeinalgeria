@@ -1,0 +1,77 @@
+---
+import Base from "../../layouts/Base.astro";
+import { breadcrumbJsonLd } from "../../lib/jsonld";
+import { SELANCE_URL } from "../../lib/site";
+import { localizePath, ui, type Locale } from "../../lib/i18n";
+import { buttonVariants, cn } from "@mia/ui";
+
+/**
+ * "Work with Algerian developers" — a genuinely useful resource page that is
+ * also the soft, honest bridge to the Selance studio. Value-first (how to hire
+ * independently comes first), one tasteful CTA, and a clear disclosure that
+ * Selance operates the directory.
+ */
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = ui[locale];
+const sep = locale === "ar" ? "، " : ", ";
+
+const crumbs = [
+  { name: t.breadcrumb.home, path: "/" },
+  { name: t.hire.heading, path: "/hire" },
+];
+---
+
+<Base
+  title={`${t.hire.title}${sep}${t.siteName}`}
+  description={t.hire.description}
+  locale={locale}
+  canonicalPath={localizePath("/hire", locale)}
+  jsonLd={breadcrumbJsonLd(crumbs, locale)}
+>
+  <section class="mx-auto w-full max-w-4xl px-6 py-12 md:py-16">
+    <h1 class="mb-3 text-3xl font-extrabold text-neutral-900 md:text-5xl">{t.hire.heading}</h1>
+    <p class="mb-10 max-w-2xl text-lg leading-relaxed text-neutral-500">{t.hire.intro}</p>
+
+    <div class="mb-10">
+      <h2 class="mb-2 text-xl font-bold text-neutral-900">{t.hire.whyTitle}</h2>
+      <p class="max-w-2xl leading-relaxed text-neutral-600">{t.hire.why}</p>
+    </div>
+
+    <h2 class="mb-4 text-xl font-bold text-neutral-900">{t.hire.howTitle}</h2>
+    <div class="mb-12 grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div class="rounded-card border !border-neutral-200 bg-white p-6">
+        <h3 class="mb-2 text-lg font-bold text-neutral-900">{t.hire.independentTitle}</h3>
+        <p class="mb-4 text-sm leading-relaxed text-neutral-500">{t.hire.independentBody}</p>
+        <a
+          href={localizePath("/developers", locale)}
+          class="text-primary-600 hover:text-primary-700 font-semibold"
+        >
+          {t.hire.browseCta}
+        </a>
+      </div>
+      <div class="rounded-card border !border-primary-200 bg-primary-50/40 p-6">
+        <h3 class="mb-2 text-lg font-bold text-neutral-900">{t.hire.studioTitle}</h3>
+        <p class="text-sm leading-relaxed text-neutral-600">{t.hire.studioBody}</p>
+      </div>
+    </div>
+
+    {/* One tasteful CTA to the studio (external, referral + equity flow through). */}
+    <div class="rounded-card from-primary-500 to-primary-700 relative overflow-hidden bg-linear-to-br px-8 py-12 text-center text-white">
+      <h2 class="mb-2 text-2xl font-bold md:text-3xl">{t.hire.ctaTitle}</h2>
+      <p class="mx-auto mb-6 max-w-xl text-primary-50/90">{t.hire.ctaBody}</p>
+      <a
+        href={SELANCE_URL}
+        target="_blank"
+        rel="noopener"
+        class={cn(buttonVariants({ variant: "white-solid", size: "lg" }), "px-10")}
+      >
+        {t.hire.cta}
+      </a>
+    </div>
+
+    <p class="mt-6 text-center text-xs text-neutral-400">{t.hire.disclosure}</p>
+  </section>
+</Base>

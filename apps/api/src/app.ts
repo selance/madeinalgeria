@@ -62,8 +62,20 @@ export function createApp() {
   // Per-IP rate limiting on the whole API surface (no-op where unbound).
   app.use("/v1/*", rateLimit);
 
-  // better-auth handles everything under /v1/auth (basePath set in @mia/auth).
-  app.on(["GET", "POST"], "/v1/auth/*", (c) => getAuth(c.env).handler(c.req.raw));
+  // Public accounts are closed: login, sign-up, and social auth are disabled on
+  // the public API. Only session read + sign-out remain (for any existing
+  // session); everything else under /v1/auth is 404'd before better-auth sees it.
+  const ALLOWED_AUTH_PATHS = new Set(["get-session", "sign-out"]);
+  app.on(["GET", "POST"], "/v1/auth/*", async (c) => {
+    const sub = c.req.path.replace(/^\/v1\/auth\//, "");
+    if (!ALLOWED_AUTH_PATHS.has(sub)) {
+      return c.json(
+        { error: { code: "not_found", message: "Route not found", requestId: c.get("requestId") } },
+        404,
+      );
+    }
+    return getAuth(c.env).handler(c.req.raw);
+  });
 
   // Public reference reads (KV-cached).
   app.route(

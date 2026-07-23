@@ -55,16 +55,13 @@ function NavItem({ title, url, exact, renderIcon }: NavItemDef) {
       <SidebarMenuButton asChild isActive={isActive}>
         <Link
           to={url}
-          className={cn(
-            "h-[38px] w-full rounded p-[1px] transition-all duration-75",
-            isActive ? "active-nav-item-border-gradient" : null,
-          )}
+          className="h-[38px] w-full rounded p-[1px] transition-all duration-75"
         >
           <div
             className={cn(
               "flex h-full w-full items-center gap-2 rounded border !border-transparent p-2 transition-all duration-75",
               isActive
-                ? "active-nav-item-gradient text-primary-500"
+                ? "bg-primary-500 text-white [&_svg]:fill-white [&_svg_*]:fill-white"
                 : "text-neutral-500 hover:bg-neutral-100/50 hover:text-neutral-700",
             )}
           >
@@ -93,7 +90,7 @@ function AdminSidebar() {
   return (
     <Sidebar variant="floating" dir="rtl" side="right">
       <SidebarHeader className="flex h-[80px] flex-row items-center justify-between p-[20px]">
-        <Logo className="text-primary-500 max-w-[200px]" />
+        <Logo className="text-primary-500 h-9 w-auto" />
         {(isMobile || open) && (
           <Button onClick={toggleSidebar} variant={"soft"} size={"icon"}>
             <SidebarIcon className="size-[26px]" />

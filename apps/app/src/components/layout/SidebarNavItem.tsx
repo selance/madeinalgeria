@@ -23,16 +23,13 @@ export function SidebarNavItem({ title, url, icon: Icon, exact = false }: Sideba
       <SidebarMenuButton asChild isActive={isActive}>
         <Link
           to={url}
-          className={cn(
-            "h-[38px] w-full rounded p-[1px] transition-all duration-75",
-            isActive ? "active-nav-item-border-gradient" : null,
-          )}
+          className="h-[38px] w-full rounded p-[1px] transition-all duration-75"
         >
           <div
             className={cn(
               "flex h-full w-full items-center gap-2 rounded border !border-transparent p-2 transition-all duration-75",
               isActive
-                ? "active-nav-item-gradient text-primary-500"
+                ? "bg-primary-500 text-white [&_svg]:fill-white [&_svg_*]:fill-white"
                 : "text-neutral-500 hover:bg-neutral-100/50 hover:text-neutral-700",
             )}
           >

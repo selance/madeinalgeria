@@ -1,6 +1,7 @@
 import { env } from "cloudflare:test";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app";
+import { getAuth } from "../src/container";
 import type { Entitlements, Profile } from "@mia/contracts";
 
 const app = createApp();
@@ -22,12 +23,11 @@ describe("/v1/me (identity + billing)", () => {
   let token: string;
 
   beforeAll(async () => {
-    const res = await app.request(
-      "/v1/auth/sign-up/email",
-      json("POST", { email: "me@example.com", password: "Str0ngPassw0rd!", name: "Me" }),
-      env,
-    );
-    token = ((await res.json()) as { token: string }).token;
+    // HTTP sign-up is closed; seed the session through the server API instead.
+    const result = (await getAuth(env).api.signUpEmail({
+      body: { email: "me@example.com", password: "Str0ngPassw0rd!", name: "Me" },
+    })) as { token: string };
+    token = result.token;
   });
 
   it("requires auth on everything under /v1/me", async () => {

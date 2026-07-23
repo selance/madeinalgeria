@@ -52,7 +52,7 @@ export function AppSidebar() {
   return (
     <Sidebar variant="floating" dir="rtl" side="right">
       <SidebarHeader className="flex h-[80px] flex-row items-center justify-between p-[20px]">
-        <Logo className="text-primary-500 max-w-[200px]" />
+        <Logo className="text-primary-500 h-9 w-auto" />
         {(isMobile || open) && (
           <Button onClick={toggleSidebar} variant={"soft"} size={"icon"}>
             <SidebarIcon className="size-[26px]" />

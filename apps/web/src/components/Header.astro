@@ -64,7 +64,10 @@ const switchHref = alternatePath(path, locale);
           target="_blank"
           rel="noreferrer"
           aria-label={t.nav.star}
-          class={cn(buttonVariants({ variant: "dark-solid", size: "default" }), "h-9 gap-1.5 px-2.5 sm:px-3")}
+          class={cn(
+            buttonVariants({ variant: "dark-solid", size: "default" }),
+            "hidden h-9 gap-1.5 px-2.5 sm:inline-flex sm:px-3",
+          )}
         >
           <GithubIcon className="size-4 fill-neutral-50" />
           <span class="hidden sm:inline">{t.nav.star}</span>

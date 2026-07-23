@@ -94,17 +94,18 @@ export default function NewsletterForm({ locale = "en" }: { locale?: Locale }) {
 
   return (
     <div>
-      <form className="flex" noValidate onSubmit={handleSubmit(onSubmit)}>
+      <form className="flex w-full" noValidate onSubmit={handleSubmit(onSubmit)}>
         <Button
           type="submit"
           variant="secondary-solid"
           size="lg"
           disabled={pending}
           aria-busy={pending}
-          className="cursor-pointer gap-2 rounded-e-none border-none before:rounded-e-none after:rounded-e-none"
+          className="shrink-0 cursor-pointer gap-2 rounded-e-none border-none before:rounded-e-none after:rounded-e-none"
         >
           <EmailIcon className="size-4 shrink-0 fill-current" />
-          {t.newsletter.button}
+          {/* Phone: icon only, so the field keeps its width. */}
+          <span className="hidden sm:inline">{t.newsletter.button}</span>
         </Button>
         <Input
           {...register("email")}
@@ -113,7 +114,7 @@ export default function NewsletterForm({ locale = "en" }: { locale?: Locale }) {
           disabled={pending}
           aria-label={t.newsletter.placeholder}
           data-invalid={errors.email ? true : undefined}
-          className="rounded-s-none border-none bg-white/10 text-white placeholder:text-primary-200/70 focus:bg-white/15 data-[invalid]:ring-2 data-[invalid]:ring-error-400"
+          className="min-w-0 flex-1 rounded-s-none border-none bg-white/10 text-white placeholder:text-primary-200/70 focus:bg-white/15 data-[invalid]:ring-2 data-[invalid]:ring-error-400"
         />
       </form>
       {status && (

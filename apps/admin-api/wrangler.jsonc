@@ -59,7 +59,7 @@
         "WEB_BASE_URL": "https://staging.madeinalgeria.dev",
         // Never "no-reply". Dedicated auth subdomain (verified in Resend).
         "AUTH_EMAIL_FROM": "Made in Algeria <hello@auth.madeinalgeria.dev>",
-        "NOTIFY_EMAIL_FROM": "Made in Algeria <notify@mail.madeinalgeria.dev>"
+        "NOTIFY_EMAIL_FROM": "Made in Algeria <moncef@selance.com>"
       },
       "d1_databases": [
         {
@@ -110,7 +110,7 @@
         "COOKIE_DOMAIN": "madeinalgeria.dev",
         // Never "no-reply". Dedicated auth subdomain (verified in Resend).
         "AUTH_EMAIL_FROM": "Made in Algeria <hello@auth.madeinalgeria.dev>",
-        "NOTIFY_EMAIL_FROM": "Made in Algeria <notify@mail.madeinalgeria.dev>"
+        "NOTIFY_EMAIL_FROM": "Made in Algeria <moncef@selance.com>"
       },
       "d1_databases": [
         {

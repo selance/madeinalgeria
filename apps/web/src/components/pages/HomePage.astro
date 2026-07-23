@@ -43,6 +43,9 @@ const NOISE_BG =
 const heroCta = cn(buttonVariants({ size: "lg" }), "px-8");
 const heroGhost = cn(buttonVariants({ variant: "dark-outline", size: "lg" }), "px-8");
 
+/** Public repo — the "star us" CTA target. Works once the repo is public. */
+const GITHUB_URL = "https://github.com/selance/madeinalgeria";
+
 // The hero's floating stack: three showcase projects as static mini-cards —
 // featured when available, top-starred otherwise, so the desktop hero's side
 // column always carries real content instead of empty paper.
@@ -248,6 +251,28 @@ const stats = [
       </section>
     )
   }
+
+  {/* Open source / contribute */}
+  <section class="mx-auto w-full max-w-7xl px-6 pt-16 md:pt-20">
+    <div class="rounded-card border !border-neutral-200 bg-white px-8 py-12 text-center md:py-14">
+      <span
+        class="border-primary-100 bg-primary-50 mb-5 inline-flex size-14 items-center justify-center rounded-full border"
+      >
+        <GithubIcon className="fill-primary-600 size-7" />
+      </span>
+      <h2 class="mb-3 text-2xl font-bold text-neutral-900 md:text-3xl">{t.home.contribTitle}</h2>
+      <p class="mx-auto mb-8 max-w-2xl text-neutral-500">{t.home.contribBody}</p>
+      <a
+        href={GITHUB_URL}
+        target="_blank"
+        rel="noreferrer"
+        class={cn(buttonVariants({ size: "lg" }), "gap-2 px-8")}
+      >
+        <RatingStarIcon className="size-4 fill-white" />
+        {t.home.starCta}
+      </a>
+    </div>
+  </section>
 
   {/* Submit band */}
   <section class="mx-auto w-full max-w-7xl px-6 py-16 md:py-20">

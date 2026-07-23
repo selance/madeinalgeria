@@ -52,7 +52,7 @@
         "TRUSTED_ORIGINS": "http://localhost:4321,http://localhost:5173,http://localhost:5174,https://mia-web-staging.<CF_SUBDOMAIN>.workers.dev,https://mia-app-staging.<CF_SUBDOMAIN>.workers.dev,https://staging.madeinalgeria.dev",
         "WEB_BASE_URL": "https://staging.madeinalgeria.dev",
         "APP_BASE_URL": "https://app-staging.madeinalgeria.dev",
-        "NOTIFY_EMAIL_FROM": "Made in Algeria <notify@mail.madeinalgeria.dev>",
+        "NOTIFY_EMAIL_FROM": "Made in Algeria <moncef@selance.com>",
         // Never "no-reply". Dedicated auth subdomain (verified in Resend) — kept separate from mail.madeinalgeria.dev bulk reputation.
         "AUTH_EMAIL_FROM": "Made in Algeria <hello@auth.madeinalgeria.dev>"
       },
@@ -116,7 +116,7 @@
         "APP_BASE_URL": "https://app.madeinalgeria.dev",
         // Apex domain so sessions are shared across app./api. subdomains.
         "COOKIE_DOMAIN": "madeinalgeria.dev",
-        "NOTIFY_EMAIL_FROM": "Made in Algeria <notify@mail.madeinalgeria.dev>",
+        "NOTIFY_EMAIL_FROM": "Made in Algeria <moncef@selance.com>",
         // Never "no-reply". Dedicated auth subdomain (verified in Resend) — kept separate from mail.madeinalgeria.dev bulk reputation.
         "AUTH_EMAIL_FROM": "Made in Algeria <hello@auth.madeinalgeria.dev>"
       },

@@ -70,6 +70,10 @@ export const ui = {
       submitBandTitle: "Built something?",
       submitBandBody:
         "If you're an Algerian developer with a public repo you're proud of, add it to the directory, it takes a minute.",
+      contribTitle: "This platform is open source",
+      contribBody:
+        "Made in Algeria is built in the open. Star the repo, open an issue, or send a pull request — help us make the home of Algerian open source better.",
+      starCta: "Star on GitHub",
     },
     projects: {
       title: "Projects",
@@ -218,6 +222,10 @@ export const ui = {
       submitBandTitle: "بنيت شيئاً؟",
       submitBandBody:
         "إن كنت مطوّراً جزائرياً ولديك مستودع عام تفخر به، أضفه إلى الدليل، الأمر لا يستغرق دقيقة.",
+      contribTitle: "هذه المنصّة مفتوحة المصدر",
+      contribBody:
+        "«صُنع في الجزائر» مبنيّ بشكل مفتوح. ضع نجمة على المستودع، أو افتح مشكلة، أو أرسل مساهمة — ساعدنا في تحسين بيت المصادر المفتوحة الجزائرية.",
+      starCta: "ضع نجمة على GitHub",
     },
     projects: {
       title: "المشاريع",

@@ -54,11 +54,11 @@ interface Contributor {
 }
 const contributors = await (async (): Promise<Contributor[]> => {
   try {
-    const init = {
+    // Direct fetch (GitHub caps unauth at 60/hr per IP). Fine at launch traffic;
+    // move behind a KV-cached API endpoint if the landing gets heavy.
+    const res = await fetch(GITHUB_CONTRIBUTORS_API, {
       headers: { "User-Agent": "madeinalgeria-web", Accept: "application/vnd.github+json" },
-      cf: { cacheTtl: 3600, cacheEverything: true },
-    };
-    const res = await fetch(GITHUB_CONTRIBUTORS_API, init as RequestInit);
+    });
     if (!res.ok) return [];
     const data = (await res.json()) as Contributor[];
     return Array.isArray(data) ? data.filter((c) => c.type !== "Bot") : [];

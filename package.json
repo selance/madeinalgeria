@@ -1,0 +1,46 @@
+{
+  "name": "mia-saas-starter",
+  "private": true,
+  "version": "0.0.1",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@10.11.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "pnpm -r --workspace-concurrency=1 test",
+    "lint": "oxlint",
+    "dev:api": "pnpm --filter @mia/api dev",
+    "dev:admin-api": "pnpm --filter @mia/admin-api dev",
+    "deploy:staging": "pnpm --filter @mia/api deploy:staging && pnpm --filter @mia/admin-api deploy:staging",
+    "deploy:production": "pnpm --filter @mia/api deploy:production && pnpm --filter @mia/admin-api deploy:production",
+    "deploy:staging:all": "pnpm -r deploy:staging",
+    "deploy:production:all": "pnpm -r deploy:production",
+    "deploy:all": "pnpm -r deploy:staging && pnpm -r deploy:production"
+  },
+  "devDependencies": {
+    "oxlint": "^1.74.0",
+    "typescript": "^7.0.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "workerd"
+    ],
+    "packageExtensions": {
+      "@hookform/resolvers": {
+        "peerDependencies": {
+          "zod": "*"
+        },
+        "peerDependenciesMeta": {
+          "zod": {
+            "optional": true
+          }
+        }
+      }
+    }
+  }
+}

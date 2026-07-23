@@ -1,0 +1,148 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/react/Footer";
+import NewsletterForm from "../components/react/NewsletterForm";
+import { SITE, SITE_NAME, DEFAULT_KEYWORDS } from "../lib/site";
+import { alternatePath, dirFor, type Locale } from "../lib/i18n";
+// Preloaded so text renders without a font-swap layout shift on navigation.
+// Graphik Arabic is self-hosted in public/fonts (declared in @mia/ui styles).
+const fontRegular = "/fonts/GraphikArabic-Regular.woff2";
+const fontBold = "/fonts/GraphikArabic-Bold.woff2";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Page locale — English (LTR, root paths) or Arabic (RTL, /ar paths). */
+  locale?: Locale;
+  /** Absolute URL or path for og:image; omitted → no og:image tag. */
+  image?: string;
+  /** Canonical path (e.g. `/privacy`); defaults to the current path. */
+  canonicalPath?: string;
+  type?: "website" | "profile" | "article";
+  keywords?: string[];
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Chrome-less shell (no site header/footer). */
+  bare?: boolean;
+}
+
+const {
+  title,
+  description,
+  locale = "en",
+  image,
+  canonicalPath = Astro.url.pathname,
+  type = "website",
+  keywords = DEFAULT_KEYWORDS,
+  noindex = false,
+  jsonLd,
+  bare = false,
+} = Astro.props;
+
+const canonical = new URL(canonicalPath, SITE).toString();
+const dir = dirFor(locale);
+// hreflang pair: this page + the same path in the other locale + x-default (en).
+const otherLocale: Locale = locale === "ar" ? "en" : "ar";
+const cleanPath = canonicalPath.replace(/\.html$/, "").replace(/\/$/, "") || "/";
+const alternate = new URL(alternatePath(cleanPath, locale), SITE).toString();
+const xDefault = locale === "en" ? canonical : alternate;
+const ogImage = image ? (image.startsWith("http") ? image : new URL(image, SITE).toString()) : undefined;
+const gtmId = import.meta.env.PUBLIC_GTM_ID;
+const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY;
+const posthogHost = import.meta.env.PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+---
+
+<!doctype html>
+<html lang={locale} dir={dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" href={fontRegular} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fontBold} as="font" type="font/woff2" crossorigin />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content={keywords.join(", ")} />
+    <meta name="author" content={SITE_NAME} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={locale} href={canonical} />
+    <link rel="alternate" hreflang={otherLocale} href={alternate} />
+    <link rel="alternate" hreflang="x-default" href={xDefault} />
+    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <meta name="robots" content="index, follow" />}
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content={locale === "ar" ? "ar_DZ" : "en_US"} />
+    {
+      ogImage && (
+        <>
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta property="og:image:alt" content={title} />
+        </>
+      )
+    }
+
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    {
+      gtmId && (
+        <script
+          is:inline
+          set:html={`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`}
+        />
+      )
+    }
+    {
+      posthogKey && (
+        <script
+          is:inline
+          set:html={`!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('${posthogKey}',{api_host:'${posthogHost}'});`}
+        />
+      )
+    }
+  </head>
+  <body
+    class="selection:text-primary-500 w-full bg-neutral-100 font-sans text-neutral-500 antialiased selection:bg-white"
+  >
+    {
+      gtmId && (
+        <noscript
+          set:html={`<iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`}
+        />
+      )
+    }
+    <!-- .root = isolation:isolate (Base UI portal setup): popups portal to
+         <body>, OUTSIDE this stacking context, so they always paint on top. -->
+    <div class="root min-h-screen overflow-x-clip bg-neutral-100">
+      {
+        bare ? (
+          <main><slot /></main>
+        ) : (
+          <>
+            <Header locale={locale} />
+            <main><slot /></main>
+            {/* Footer itself stays server-only; just the opt-in form hydrates. */}
+            <Footer locale={locale}>
+              <NewsletterForm slot="newsletter" locale={locale} client:visible />
+            </Footer>
+          </>
+        )
+      }
+    </div>
+  </body>
+</html>

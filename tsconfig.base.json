@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    // DOM is here for @mia/email: its templates are React (.tsx), React's
+    // types are written against the DOM lib, and the package is exported as raw
+    // source — so every consumer, backend Workers included, compiles those files
+    // as part of its own program. Verified to coexist with @cloudflare/workers-types.
+    // Backend code still has no `document` at runtime; treat DOM globals as
+    // off-limits outside the frontends.
+    // DOM.Iterable comes along for `for (const x of searchParams)` — the DOM
+    // lib's URLSearchParams is only iterable with it.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": []
+  }
+}

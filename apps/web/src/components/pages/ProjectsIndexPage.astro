@@ -1,0 +1,83 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectsExplorer, { type CategoryOption } from "../react/ProjectsExplorer";
+import { apiGet } from "../../lib/api";
+import { localizePath, ui, type Locale } from "../../lib/i18n";
+import type {
+  CategoryItem,
+  OffsetPagination,
+  ProjectLanguageFacet,
+  PublicProject,
+} from "@mia/contracts";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+const env = Astro.locals.runtime?.env;
+
+// Server-render page 1 from the URL query (SEO + first paint), then the
+// explorer island takes over client-side with the same state.
+const sp = Astro.url.searchParams;
+const initialQuery = {
+  q: sp.get("q") ?? "",
+  language: sp.get("language") ?? "",
+  categoryId: sp.get("categoryId") ?? "",
+  sort: sp.get("sort") ?? "stars",
+  page: Math.max(1, Number(sp.get("page")) || 1),
+};
+
+const listParams = new URLSearchParams();
+if (initialQuery.q) listParams.set("q", initialQuery.q);
+if (initialQuery.language) listParams.set("language", initialQuery.language);
+if (initialQuery.categoryId) listParams.set("categoryId", initialQuery.categoryId);
+listParams.set("sort", initialQuery.sort);
+listParams.set("page", String(initialQuery.page));
+
+const [listRes, facetsRes, categoriesRes] = await Promise.all([
+  apiGet<{ items: PublicProject[]; pagination: OffsetPagination }>(
+    env,
+    `/v1/projects?${listParams}`,
+  ),
+  apiGet<{ languages: ProjectLanguageFacet[] }>(env, "/v1/projects/facets"),
+  apiGet<CategoryItem[]>(env, "/v1/reference/categories"),
+]);
+
+const initial = listRes.data ?? {
+  items: [],
+  pagination: { page: 1, limit: 24, total_count: 0, total_pages: 1 },
+};
+const facets = facetsRes.data?.languages ?? [];
+const categories: CategoryOption[] = (categoriesRes.data ?? [])
+  .filter((c) => c.isActive)
+  .map((c) => ({
+    id: c.id,
+    label: c.names[locale] ?? c.names["en"] ?? c.names["ar"] ?? c.slug,
+  }));
+---
+
+<Base
+  title={`${t.projects.title} — ${t.siteName}`}
+  description={t.projects.description}
+  locale={locale}
+  canonicalPath={localizePath("/projects", locale)}
+>
+  <section class="mx-auto w-full max-w-7xl px-6 py-10 md:py-14">
+    <div class="mb-8">
+      <h1 class="mb-2 text-3xl font-extrabold text-neutral-900 md:text-4xl">
+        {t.projects.heading}
+      </h1>
+      <p class="text-neutral-500">{t.projects.description}</p>
+    </div>
+    <ProjectsExplorer
+      client:load
+      locale={locale}
+      initial={initial}
+      facets={facets}
+      categories={categories}
+      initialQuery={initialQuery}
+    />
+  </section>
+</Base>

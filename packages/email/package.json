@@ -1,0 +1,31 @@
+{
+  "name": "@mia/email",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "preview": "email dev --dir emails --port 3010",
+    "export:html": "tsx scripts/export-html.ts",
+    "build:gallery": "tsx scripts/build-gallery.ts"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250620.0",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "react-email": "^6.7.0",
+    "tsx": "^4.23.0",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.0"
+  },
+  "dependencies": {
+    "@react-email/components": "^1.0.12",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  }
+}

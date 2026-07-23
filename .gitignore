@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+.dev.vars.*
+*.local
+.env
+.env.*
+# Frontend env files hold ONLY public base URLs (never secrets) — committed.
+!apps/web/.env
+!apps/web/.env.staging
+!apps/web/.env.production
+!apps/app/.env
+!apps/app/.env.production
+!apps/admin-web/.env
+!apps/admin-web/.env.production
+coverage/
+.astro/
+.turbo/
+
+# rendered email previews (packages/email export:html)
+preview-out/
+tools/discover/raw.json

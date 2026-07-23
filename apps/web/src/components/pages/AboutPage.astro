@@ -1,0 +1,50 @@
+---
+import Base from "../../layouts/Base.astro";
+import { localizePath, ui, type Locale } from "../../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+const CONTACT_EMAIL = "moncef@mochir.com";
+
+const sections = [
+  { title: t.about.missionTitle, body: t.about.mission },
+  { title: t.about.howTitle, body: t.about.how },
+  { title: t.about.criteriaTitle, body: t.about.criteria },
+];
+---
+
+<Base
+  title={`${t.about.title} — ${t.siteName}`}
+  description={t.about.description}
+  locale={locale}
+  canonicalPath={localizePath("/about", locale)}
+>
+  <section class="mx-auto w-full max-w-3xl px-6 py-12 md:py-16">
+    <h1 class="mb-10 text-3xl font-extrabold text-neutral-900 md:text-4xl">{t.about.heading}</h1>
+    <div class="flex flex-col gap-10">
+      {
+        sections.map((section) => (
+          <div>
+            <h2 class="mb-3 text-xl font-bold text-neutral-900">{section.title}</h2>
+            <p class="leading-relaxed text-neutral-600">{section.body}</p>
+          </div>
+        ))
+      }
+      <div>
+        <h2 class="mb-3 text-xl font-bold text-neutral-900">{t.about.contactTitle}</h2>
+        <p class="leading-relaxed text-neutral-600">
+          {t.about.contact}{" "}
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            class="font-semibold text-primary-600 hover:text-primary-700"
+            dir="ltr">{CONTACT_EMAIL}</a
+          >
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>

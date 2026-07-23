@@ -1,0 +1,111 @@
+---
+/**
+ * Opt-out landing page for every piece of bulk mail. Same POST-behind-a-button
+ * shape as confirm.astro, so a link prefetcher can't unsubscribe someone who
+ * never clicked.
+ *
+ * Two link shapes arrive here, because bulk mail reaches two kinds of recipient:
+ *  - `?e=&s=`   the signed address — what all new mail carries, and the only
+ *               thing a campaign recipient (pasted in by an admin, no row
+ *               anywhere) can have.
+ *  - `?token=`  a newsletter subscriber's opt-in token — older links, still
+ *               honoured. Neither ever expires: they live on in delivered mail.
+ */
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { apiPost } from "../../lib/api";
+
+const params = Astro.url.searchParams;
+const token = params.get("token") ?? "";
+const email = params.get("e") ?? "";
+const signature = params.get("s") ?? "";
+const env = Astro.locals.runtime?.env;
+
+const signed = Boolean(email && signature);
+const hasLink = signed || Boolean(token);
+
+type State = "confirm" | "done" | "invalid" | "error";
+let state: State = hasLink ? "confirm" : "invalid";
+
+if (Astro.request.method === "POST" && hasLink) {
+  const path = signed
+    ? `/v1/newsletter/unsubscribe?e=${encodeURIComponent(email)}&s=${encodeURIComponent(signature)}`
+    : "/v1/newsletter/unsubscribe";
+  const res = await apiPost<{ status: string }>(env, path, signed ? {} : { token });
+  if (res.ok) {
+    state = "done";
+  } else if (res.status === 400) {
+    state = "invalid";
+    Astro.response.status = 400;
+  } else {
+    state = "error";
+    Astro.response.status = 502;
+  }
+}
+---
+
+<Base locale="ar" title="إلغاء الاشتراك في النشرة - صُنع في الجزائر" description="إلغاء الاشتراك في النشرة الإخبارية لمنصة صُنع في الجزائر." noindex>
+  <section class="mx-auto flex min-h-[60vh] w-full max-w-7xl items-center justify-center px-6 py-24">
+    <div class="rounded-card w-full max-w-md bg-white p-8 text-center drop-shadow-default">
+      {
+        state === "confirm" && (
+          <>
+            <h1 class="mb-3 text-2xl font-bold text-neutral-800">إلغاء الاشتراك</h1>
+            <p class="mb-6 leading-relaxed text-neutral-500">
+              اضغط على الزر لإلغاء اشتراكك في النشرة الإخبارية. لن تصلك أي رسائل بعد ذلك.
+            </p>
+            <form method="post">
+              <button
+                type="submit"
+                class="w-full cursor-pointer rounded-lg border !border-neutral-200 px-6 py-3 font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+              >
+                تأكيد إلغاء الاشتراك
+              </button>
+            </form>
+          </>
+        )
+      }
+      {
+        state === "done" && (
+          <>
+            <h1 class="mb-3 text-2xl font-bold text-neutral-800">تم إلغاء اشتراكك</h1>
+            <p class="mb-6 leading-relaxed text-neutral-500">
+              لن تصلك رسائل النشرة الإخبارية بعد الآن. يمكنك الاشتراك من جديد في أي وقت.
+            </p>
+            <a href="/" class="text-primary-600 font-medium hover:underline">
+              العودة إلى الرئيسية
+            </a>
+          </>
+        )
+      }
+      {
+        state === "invalid" && (
+          <>
+            <h1 class="mb-3 text-2xl font-bold text-neutral-800">الرابط غير صالح</h1>
+            <p class="mb-6 leading-relaxed text-neutral-500">
+              هذا الرابط غير صحيح. إن كنت ترغب في إلغاء الاشتراك، استخدم الرابط الموجود في آخر رسالة
+              وصلتك.
+            </p>
+            <a href="/" class="text-primary-600 font-medium hover:underline">
+              العودة إلى الرئيسية
+            </a>
+          </>
+        )
+      }
+      {
+        state === "error" && (
+          <>
+            <h1 class="mb-3 text-2xl font-bold text-neutral-800">تعذّر إتمام العملية</h1>
+            <p class="mb-6 leading-relaxed text-neutral-500">
+              حدث خطأ غير متوقع. حاول مرة أخرى بعد قليل.
+            </p>
+            <a href="/" class="text-primary-600 font-medium hover:underline">
+              العودة إلى الرئيسية
+            </a>
+          </>
+        )
+      }
+    </div>
+  </section>
+</Base>

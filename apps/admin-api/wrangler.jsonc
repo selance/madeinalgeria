@@ -1,0 +1,90 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mia-admin-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // Admin posture: NO public workers.dev in production (custom domain
+  // admin-api.madeinalgeria.dev at cutover, optionally behind Cloudflare Access).
+  // requireAdmin mounts before EVERYTHING except /health and /v1/auth.
+  // Secrets per env: AUTH_SECRET, GOOGLE_CLIENT_SECRET, RESEND_API_KEY.
+  "workers_dev": false,
+  "vars": {
+    "ENVIRONMENT": "dev",
+    "AUTH_BASE_URL": "http://localhost:8788",
+    // 5174 = Vite dev of apps/admin-web
+    "TRUSTED_ORIGINS": "http://localhost:3000,http://localhost:5174"
+  },
+  // Same core DB/KV as apps/api (ids only matter on deploy; dev is miniflare).
+  "d1_databases": [
+    {
+      "binding": "DB_CORE",
+      "database_name": "mia-core",
+      "database_id": "local-dev",
+      "migrations_dir": "../../packages/db-core/migrations"
+    }
+  ],
+  "kv_namespaces": [{ "binding": "KV", "id": "local-dev" }],
+  // Producer only — the consumer lives in apps/api.
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "mia-jobs" }]
+  },
+  "env": {
+    "staging": {
+      "workers_dev": true,
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "AUTH_BASE_URL": "https://mia-admin-api-staging.<CF_SUBDOMAIN>.workers.dev",
+        "TRUSTED_ORIGINS": "http://localhost:3000,http://localhost:5174,https://mia-admin-web-staging.<CF_SUBDOMAIN>.workers.dev,https://admin-staging.madeinalgeria.dev",
+        "WEB_BASE_URL": "https://staging.madeinalgeria.dev",
+        // Never "no-reply". Dedicated auth subdomain (verified in Resend).
+        "AUTH_EMAIL_FROM": "Made in Algeria <hello@auth.madeinalgeria.dev>",
+        "NOTIFY_EMAIL_FROM": "Made in Algeria <notify@mail.madeinalgeria.dev>"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB_CORE",
+          "database_name": "mia-core-staging",
+          // Same id as apps/api staging (one shared core DB)
+          "database_id": "ca8d4ac1-b686-4325-b18b-8872ffcfc9d9",
+          "migrations_dir": "../../packages/db-core/migrations"
+        }
+      ],
+      // Same id as apps/api staging (one shared KV namespace)
+      "kv_namespaces": [{ "binding": "KV", "id": "5db730f6f0de49bbb9d95855af13499f" }],
+      "queues": {
+        "producers": [{ "binding": "JOBS", "queue": "mia-jobs-staging" }]
+      }
+    },
+    "production": {
+      "workers_dev": false,
+      // Custom domain at cutover — fill in the real hostname:
+      "routes": [{ "pattern": "admin-api.madeinalgeria.dev", "custom_domain": true }],
+      "vars": {
+        "ENVIRONMENT": "production",
+        "AUTH_BASE_URL": "https://admin-api.madeinalgeria.dev",
+        "TRUSTED_ORIGINS": "https://admin.madeinalgeria.dev",
+        "APP_BASE_URL": "https://app.madeinalgeria.dev",
+        "WEB_BASE_URL": "https://www.madeinalgeria.dev",
+        // Apex domain so sessions are shared across admin./admin-api. subdomains.
+        "COOKIE_DOMAIN": "madeinalgeria.dev",
+        // Never "no-reply". Dedicated auth subdomain (verified in Resend).
+        "AUTH_EMAIL_FROM": "Made in Algeria <hello@auth.madeinalgeria.dev>",
+        "NOTIFY_EMAIL_FROM": "Made in Algeria <notify@mail.madeinalgeria.dev>"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB_CORE",
+          "database_name": "mia-core-prod",
+          "database_id": "80eb9f25-c090-4be2-bc46-724e3445d6d4",
+          "migrations_dir": "../../packages/db-core/migrations"
+        }
+      ],
+      "kv_namespaces": [{ "binding": "KV", "id": "6f9b976235194803b19c36e9db656b0a" }],
+      "queues": {
+        "producers": [{ "binding": "JOBS", "queue": "mia-jobs-prod" }]
+      }
+    }
+  }
+}

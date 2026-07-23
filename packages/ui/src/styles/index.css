@@ -1,0 +1,76 @@
+/*
+ * Made in Algeria design system styles. Import from an app AFTER tailwindcss:
+ *
+ *   @import "tailwindcss";
+ *   @import "@mia/ui/styles.css";
+ *   @source "../../../packages/ui/src";   (adjust depth to the app's css file)
+ *
+ * The @source directive makes Tailwind generate utilities used inside the
+ * shared components.
+ *
+ * Font: Graphik Arabic, self-hosted. Each app copies the woff2 pair into its
+ * public/fonts/ dir (apps/web, apps/app, apps/admin-web all ship it) so the
+ * absolute /fonts/ URLs below resolve everywhere this sheet is imported.
+ */
+@import "./config.css";
+@import "./common.css";
+@import "./typography.css";
+@import "./animations.css";
+@import "./tailwindcss-animate.css";
+
+@font-face {
+  font-family: "Graphik Arabic";
+  src: url("/fonts/GraphikArabic-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Graphik Arabic";
+  src: url("/fonts/GraphikArabic-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-graphik: "Graphik Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.root {
+  isolation: isolate;
+}
+
+/* Brand gradient utilities (ported from the v1 globals.css). */
+.chat-box-border-gradient {
+  @apply bg-linear-[180deg,var(--color-white)_0%,var(--color-neutral-50)_75%,var(--color-light-secondary)_84%,var(--color-primary-300)];
+}
+.chat-box-gradient {
+  @apply bg-linear-[180deg,var(--color-neutral-50)_0%,var(--color-neutral-100)_75%,var(--color-light-secondary)_84%,var(--color-primary-100)];
+}
+.special-box-gradient {
+  @apply bg-linear-[180deg,var(--color-neutral-50)_0%,var(--color-neutral-100)_75%,var(--color-primary-100)];
+}
+.special-box-border-gradient {
+  @apply bg-linear-[180deg,var(--color-white)_0%,var(--color-neutral-200)_75%,var(--color-primary-300)];
+}
+/* Secondary (amber) twin of the chat/special box gradient — used to make the
+   service-request CTA stand out with a warm premium fill + gradient border. */
+.request-box-gradient {
+  @apply bg-linear-[180deg,var(--color-neutral-50)_0%,var(--color-neutral-100)_70%,var(--color-light-secondary)_84%,var(--color-secondary-100)];
+}
+.request-box-border-gradient {
+  @apply bg-linear-[180deg,var(--color-white)_0%,var(--color-neutral-200)_70%,var(--color-light-secondary)_84%,var(--color-secondary-300)];
+}
+.active-nav-item-gradient {
+  @apply bg-linear-[95deg,var(--color-neutral-50)_0%,var(--color-neutral-100)_75%,var(--color-primary-50)_84%,var(--color-primary-100)];
+}
+.active-nav-item-border-gradient {
+  @apply bg-linear-[95deg,var(--color-white)_0%,var(--color-neutral-200)_75%,var(--color-primary-50)_84%,var(--color-primary-300)];
+}
+.banner-box-gradient {
+  @apply bg-linear-[180deg,var(--color-white)_0%,var(--color-primary-200)_75%,var(--color-primary-300)];
+}
+.banner-box-border-gradient {
+  @apply bg-linear-[180deg,var(--color-white)_0%,var(--color-neutral-200)_75%,var(--color-primary-300)];
+}

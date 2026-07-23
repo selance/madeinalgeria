@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["**/dist/**", "**/.wrangler/**", "**/coverage/**", "**/.astro/**"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "ignoreRestSiblings": true, "varsIgnorePattern": "^_" }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["packages/modules/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@mia/module-*", "@mia/modules/*"],
+                "message": "Modules must not import other modules. Depend on a service interface from @mia/contracts instead (wired in the app container)."
+              },
+              {
+                "group": ["@mia/api", "@mia/admin-api", "@mia/api/*", "@mia/admin-api/*"],
+                "message": "Modules must not import from apps."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

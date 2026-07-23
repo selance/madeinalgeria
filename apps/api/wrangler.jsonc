@@ -1,0 +1,171 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mia-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // Local dev is miniflare (never --remote). Secrets go in .dev.vars locally
+  // and `wrangler secret put --env <env>` for deployed envs — NEVER in "vars".
+  // Secrets per env: AUTH_SECRET, GOOGLE_CLIENT_SECRET, RESEND_API_KEY,
+  // CLOUDFLARE_IMAGES_API_TOKEN.
+  "workers_dev": false,
+  "vars": {
+    "ENVIRONMENT": "dev",
+    "AUTH_BASE_URL": "http://localhost:8787",
+    // 3000/3001 misc local dev; 4321 Astro (apps/web); 5173/5174 Vite (apps/app, apps/admin-web)
+    "TRUSTED_ORIGINS": "http://localhost:3000,http://localhost:3001,http://localhost:4321,http://localhost:5173,http://localhost:5174",
+    "WEB_BASE_URL": "http://localhost:4321",
+    "APP_BASE_URL": "http://localhost:5173"
+    // Cloudflare Images upload — set CLOUDFLARE_ACCOUNT_ID here and the token in
+    // .dev.vars to enable POST /v1/images/upload:
+    // "CLOUDFLARE_ACCOUNT_ID": "<account-id>"
+  },
+  // Local dev D1/KV are miniflare-backed; the ids below only matter on deploy.
+  "d1_databases": [
+    {
+      "binding": "DB_CORE",
+      "database_name": "mia-core",
+      "database_id": "local-dev",
+      "migrations_dir": "../../packages/db-core/migrations"
+    }
+  ],
+  "kv_namespaces": [{ "binding": "KV", "id": "local-dev" }],
+  // One jobs queue + DLQ; both consumers live in this same Worker. The DLQ
+  // consumer logs dead jobs (it never throws) so failures are visible.
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "mia-jobs" }],
+    "consumers": [
+      { "queue": "mia-jobs", "max_retries": 3, "dead_letter_queue": "mia-jobs-dlq" },
+      { "queue": "mia-jobs-dlq", "max_retries": 3 }
+    ]
+  },
+  // Scheduled work is a no-op stub in the template. Uncomment + wire handlers in
+  // src/index.ts when you add crons.
+  // "triggers": { "crons": ["0 3 * * *"] },
+  "env": {
+    "staging": {
+      "workers_dev": true,
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "AUTH_BASE_URL": "https://mia-api-staging.<CF_SUBDOMAIN>.workers.dev",
+        "TRUSTED_ORIGINS": "http://localhost:4321,http://localhost:5173,http://localhost:5174,https://mia-web-staging.<CF_SUBDOMAIN>.workers.dev,https://mia-app-staging.<CF_SUBDOMAIN>.workers.dev,https://staging.madeinalgeria.dev",
+        "WEB_BASE_URL": "https://staging.madeinalgeria.dev",
+        "APP_BASE_URL": "https://app-staging.madeinalgeria.dev",
+        "NOTIFY_EMAIL_FROM": "Made in Algeria <notify@mail.madeinalgeria.dev>",
+        // Never "no-reply". Dedicated auth subdomain (verified in Resend) — kept separate from mail.madeinalgeria.dev bulk reputation.
+        "AUTH_EMAIL_FROM": "Made in Algeria <hello@auth.madeinalgeria.dev>"
+      },
+      "queues": {
+        "producers": [{ "binding": "JOBS", "queue": "mia-jobs-staging" }],
+        "consumers": [
+          {
+            "queue": "mia-jobs-staging",
+            "max_retries": 3,
+            "dead_letter_queue": "mia-jobs-dlq-staging"
+          },
+          { "queue": "mia-jobs-dlq-staging", "max_retries": 3 }
+        ]
+      },
+      // Per-IP API rate limit (300 req / 60 s). Not bound in dev/tests.
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2002",
+            "simple": { "limit": 300, "period": 60 }
+          },
+          // Anonymous newsletter opt-in — writes D1 and triggers mail, so it
+          // gets the tightest budget on the API.
+          {
+            "name": "NEWSLETTER_RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2006",
+            "simple": { "limit": 5, "period": 60 }
+          },
+          // Anonymous project submission — D1 write + an upstream GitHub fetch
+          // per call, so it gets its own tight budget.
+          {
+            "name": "PROJECT_SUBMIT_RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2008",
+            "simple": { "limit": 3, "period": 60 }
+          }
+        ]
+      },
+      "d1_databases": [
+        {
+          "binding": "DB_CORE",
+          "database_name": "mia-core-staging",
+          "database_id": "ca8d4ac1-b686-4325-b18b-8872ffcfc9d9",
+          "migrations_dir": "../../packages/db-core/migrations"
+        }
+      ],
+      "kv_namespaces": [{ "binding": "KV", "id": "5db730f6f0de49bbb9d95855af13499f" }]
+    },
+    "production": {
+      "workers_dev": false,
+      // Custom domain at cutover — fill in the real hostname:
+      "routes": [{ "pattern": "api.madeinalgeria.dev", "custom_domain": true }],
+      "vars": {
+        "ENVIRONMENT": "production",
+        "AUTH_BASE_URL": "https://api.madeinalgeria.dev",
+        "TRUSTED_ORIGINS": "https://www.madeinalgeria.dev,https://madeinalgeria.dev,https://app.madeinalgeria.dev",
+        "WEB_BASE_URL": "https://www.madeinalgeria.dev",
+        "APP_BASE_URL": "https://app.madeinalgeria.dev",
+        // Apex domain so sessions are shared across app./api. subdomains.
+        "COOKIE_DOMAIN": "madeinalgeria.dev",
+        "NOTIFY_EMAIL_FROM": "Made in Algeria <notify@mail.madeinalgeria.dev>",
+        // Never "no-reply". Dedicated auth subdomain (verified in Resend) — kept separate from mail.madeinalgeria.dev bulk reputation.
+        "AUTH_EMAIL_FROM": "Made in Algeria <hello@auth.madeinalgeria.dev>"
+      },
+      "queues": {
+        "producers": [{ "binding": "JOBS", "queue": "mia-jobs-prod" }],
+        "consumers": [
+          {
+            "queue": "mia-jobs-prod",
+            "max_retries": 3,
+            "dead_letter_queue": "mia-jobs-dlq-prod"
+          },
+          { "queue": "mia-jobs-dlq-prod", "max_retries": 3 }
+        ]
+      },
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2003",
+            "simple": { "limit": 300, "period": 60 }
+          },
+          // Anonymous newsletter opt-in — writes D1 and triggers mail, so it
+          // gets the tightest budget on the API.
+          {
+            "name": "NEWSLETTER_RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2007",
+            "simple": { "limit": 5, "period": 60 }
+          },
+          // Anonymous project submission — D1 write + an upstream GitHub fetch
+          // per call, so it gets its own tight budget.
+          {
+            "name": "PROJECT_SUBMIT_RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2009",
+            "simple": { "limit": 3, "period": 60 }
+          }
+        ]
+      },
+      "d1_databases": [
+        {
+          "binding": "DB_CORE",
+          "database_name": "mia-core-prod",
+          "database_id": "80eb9f25-c090-4be2-bc46-724e3445d6d4",
+          "migrations_dir": "../../packages/db-core/migrations"
+        }
+      ],
+      "kv_namespaces": [{ "binding": "KV", "id": "6f9b976235194803b19c36e9db656b0a" }]
+    }
+  }
+}

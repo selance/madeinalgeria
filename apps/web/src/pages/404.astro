@@ -1,0 +1,15 @@
+---
+import Base from "../layouts/Base.astro";
+// One 404 serves both locales — keep the copy bilingual.
+---
+
+<Base title="Page not found — Made in Algeria" description="The page you're looking for doesn't exist." noindex>
+  <section class="mx-auto flex min-h-[50vh] w-full max-w-7xl flex-col items-center justify-center gap-4 px-6 py-24 text-center">
+    <h1 class="text-6xl font-bold text-neutral-300">404</h1>
+    <p class="text-xl font-semibold text-neutral-700">Page not found · الصفحة غير موجودة</p>
+    <div class="flex flex-wrap justify-center gap-6">
+      <a href="/" class="text-primary-600 font-medium hover:underline">Back to home</a>
+      <a href="/ar" dir="rtl" class="text-primary-600 font-medium hover:underline">العودة إلى الرئيسية</a>
+    </div>
+  </section>
+</Base>

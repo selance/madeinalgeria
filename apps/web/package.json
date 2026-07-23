@@ -1,0 +1,39 @@
+{
+  "name": "@mia/web",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro build && wrangler dev",
+    "typecheck": "astro check",
+    "test": "vitest run --passWithNoTests",
+    "deploy:staging": "astro build --mode staging && wrangler deploy --env staging",
+    "deploy:production": "astro build && wrangler deploy --env production"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.0",
+    "@astrojs/react": "^4.3.0",
+    "@hookform/resolvers": "^5.2.1",
+    "@mia/contracts": "workspace:*",
+    "@mia/core": "workspace:*",
+    "@mia/ui": "workspace:*",
+    "@tailwindcss/vite": "^4",
+    "astro": "^5.13.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-hook-form": "^7.62.0",
+    "tailwindcss": "^4",
+    "zod": "^4.0.17"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5",
+    "vitest": "^4.1.9",
+    "wrangler": "^4.20.0"
+  }
+}

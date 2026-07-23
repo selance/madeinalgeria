@@ -1,0 +1,38 @@
+{
+    "name":  "@mia/admin-web",
+    "version":  "0.0.1",
+    "private":  true,
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "vite",
+                    "build":  "vite build",
+                    "preview":  "vite preview",
+                    "typecheck":  "tsc --noEmit",
+                    "deploy:staging":  "vite build \u0026\u0026 wrangler deploy --env staging",
+                    "deploy:production":  "vite build --mode production \u0026\u0026 wrangler deploy --env production"
+                },
+    "dependencies":  {
+                         "@hookform/resolvers":  "^5.2.1",
+                         "@mia/api-client":  "workspace:*",
+                         "@mia/contracts":  "workspace:*",
+                         "@mia/core":  "workspace:*",
+                         "@mia/ui":  "workspace:*",
+                         "@tanstack/react-query":  "^5.85.6",
+                         "@tanstack/react-table":  "^8.21.3",
+                         "react":  "19.2.0",
+                         "react-dom":  "19.2.0",
+                         "react-hook-form":  "^7.62.0",
+                         "react-router":  "^7.1.0",
+                         "zod":  "^4.0.17"
+                     },
+    "devDependencies":  {
+                            "@tailwindcss/vite":  "^4",
+                            "@types/react":  "^19",
+                            "@types/react-dom":  "^19",
+                            "@vitejs/plugin-react":  "^4.6.0",
+                            "tailwindcss":  "^4",
+                            "typescript": "^7.0.2",
+                            "vite":  "^7.0.0",
+                            "wrangler":  "^4.20.0"
+                        }
+}

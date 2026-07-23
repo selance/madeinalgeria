@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "@mia/ui/styles.css";
+
+/* Generate utilities used inside the shared ui package (workspace source). */
+@source "../../../../packages/ui/src";

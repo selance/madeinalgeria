@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>صُنع في الجزائر - لوحة التحكم</title>
+  </head>
+  <!-- v1 parity: body carries the dashboard background/typography; the inner
+       .root div is Base UI's isolated stacking context (popups portal to
+       body, outside it, so dropdowns always paint above the app). -->
+  <body
+    class="selection:text-primary-500 w-full bg-neutral-100 font-sans text-neutral-500 antialiased selection:bg-white"
+  >
+    <div id="root" class="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

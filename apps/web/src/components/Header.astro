@@ -1,0 +1,71 @@
+---
+import Logo from "@mia/ui/icons/Logo";
+import { buttonVariants, cn } from "@mia/ui";
+import { alternatePath, localizePath, ui, type Locale } from "../lib/i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = "en" } = Astro.props;
+const t = ui[locale];
+
+// Prerendered pages see their static path (`/privacy.html` under
+// build.format "file") — normalize so exact-path checks hold in both modes.
+const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
+
+const links = [
+  { href: localizePath("/projects", locale), label: t.nav.projects },
+  { href: localizePath("/about", locale), label: t.nav.about },
+];
+const isActive = (href: string) => !href.includes("#") && path.startsWith(href);
+const home = localizePath("/", locale);
+const isLanding = path === home || (locale === "ar" && path === "/ar");
+
+const submitBtn = cn(buttonVariants({ size: "default" }));
+// The switcher swaps locale but keeps the page.
+const switchHref = alternatePath(path, locale);
+
+---
+
+<header
+  class:list={[
+    "sticky top-0 z-40 flex h-[5rem] items-center border-b !border-neutral-200 backdrop-blur-md",
+    isLanding ? "bg-white/80" : "bg-neutral-100/85",
+  ]}
+>
+  <div class="mx-auto flex h-full w-full max-w-7xl items-center justify-between px-6">
+    <a href={home} aria-label={t.siteName}>
+      <Logo className="h-8 w-auto md:h-9" />
+    </a>
+    <div class="flex h-full items-center gap-2 md:gap-6">
+      <nav class="hidden h-full gap-4 sm:flex">
+        {
+          links.map((link) => (
+            <a
+              href={link.href}
+              class:list={[
+                "relative flex h-full items-center justify-center px-1 py-1 font-medium transition-colors duration-200",
+                "text-neutral-500 hover:text-neutral-600 active:text-neutral-800",
+                isActive(link.href) &&
+                  "text-neutral-950 font-semibold after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary-500",
+              ]}
+            >
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+      <div class="flex items-center gap-2">
+        <a
+          href={switchHref}
+          aria-label={t.switcher.aria}
+          class="flex h-9 items-center rounded-md border !border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-600 transition-colors hover:!border-neutral-300 hover:text-neutral-800"
+        >
+          {t.switcher.label}
+        </a>
+        <a href={localizePath("/submit", locale)} class={submitBtn}>{t.nav.submit}</a>
+      </div>
+    </div>
+  </div>
+</header>

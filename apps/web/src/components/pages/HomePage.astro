@@ -1,0 +1,274 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectCard, { compactCount } from "../react/ProjectCard";
+import { SITE, SITE_NAME } from "../../lib/site";
+import { apiGet } from "../../lib/api";
+import { localizePath, ui, type Locale } from "../../lib/i18n";
+import { buttonVariants, cn } from "@mia/ui";
+import type { OffsetPagination, ProjectLanguageFacet, PublicProject } from "@mia/contracts";
+import RatingStarIcon from "@mia/ui/icons/RatingStarIcon";
+import GithubIcon from "@mia/ui/icons/GithubIcon";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = ui[locale];
+const env = Astro.locals.runtime?.env;
+const numLocale = locale === "ar" ? "ar-DZ" : "en";
+
+// Featured + top-starred + light stats. All calls tolerate API failure (a
+// degraded page beats a 500 on the landing page); featured/facets are
+// KV-cached upstream. When nothing is hand-featured yet, the top-starred
+// approved projects stand in for both the hero cards and the grid.
+const [featuredRes, listRes, facetsRes] = await Promise.all([
+  apiGet<PublicProject[]>(env, "/v1/projects/featured"),
+  apiGet<{ items: PublicProject[]; pagination: OffsetPagination }>(env, "/v1/projects?limit=6"),
+  apiGet<{ languages: ProjectLanguageFacet[] }>(env, "/v1/projects/facets"),
+]);
+const featured = featuredRes.data ?? [];
+const topStarred = listRes.data?.items ?? [];
+const totalProjects = listRes.data?.pagination.total_count ?? 0;
+const totalLanguages = facetsRes.data?.languages.length ?? 0;
+
+const showcase = featured.length > 0 ? featured : topStarred;
+const showcaseTitle = featured.length > 0 ? t.home.featuredTitle : t.home.topTitle;
+const showcaseBody = featured.length > 0 ? t.home.featuredBody : t.home.topBody;
+
+/** Same film-grain texture as the footer, faint over the paper hero. */
+const NOISE_BG =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='0.7' intercept='0.2'/><feFuncG type='linear' slope='0.7' intercept='0.2'/><feFuncB type='linear' slope='0.7' intercept='0.2'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.8'/></svg>\")";
+
+const heroCta = cn(buttonVariants({ size: "lg" }), "px-8");
+const heroGhost = cn(buttonVariants({ variant: "dark-outline", size: "lg" }), "px-8");
+
+// The hero's floating stack: three showcase projects as static mini-cards —
+// featured when available, top-starred otherwise, so the desktop hero's side
+// column always carries real content instead of empty paper.
+const heroCards = showcase.slice(0, 3);
+const stats = [
+  ...(totalProjects > 0
+    ? [{ value: totalProjects.toLocaleString(numLocale), label: t.home.statsProjects }]
+    : []),
+  ...(totalLanguages > 0
+    ? [{ value: totalLanguages.toLocaleString(numLocale), label: t.home.statsLanguages }]
+    : []),
+  { value: "100%", label: locale === "ar" ? "مفتوح المصدر" : "open source" },
+];
+---
+
+<Base
+  title={t.home.title}
+  description={t.home.description}
+  locale={locale}
+  canonicalPath={localizePath("/", locale)}
+  jsonLd={[
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: SITE,
+      inLanguage: locale,
+    },
+  ]}
+>
+  {/* Hero — paper surface, faint grain, hairline-framed floating cards */}
+  <section class="relative overflow-hidden border-b !border-neutral-200 bg-white">
+    <div
+      aria-hidden
+      class="pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-multiply"
+      style={{ backgroundImage: NOISE_BG }}
+    >
+    </div>
+    {/* Two-column only when there are showcase cards to float on the side;
+        otherwise a centered single column so desktop never shows a dead half. */}
+    <div
+      class:list={[
+        "relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 py-14 md:py-20",
+        heroCards.length > 0 && "lg:grid-cols-[1.1fr_0.9fr]",
+      ]}
+    >
+      <div
+        class:list={[
+          "flex flex-col gap-6",
+          heroCards.length > 0
+            ? "items-start"
+            : "mx-auto max-w-3xl items-center text-center",
+        ]}
+      >
+        <span class="border !border-primary-200 bg-primary-50 text-primary-700 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold">
+          <span aria-hidden class="bg-primary-500 size-2 rounded-full"></span>
+          {t.home.badge}
+        </span>
+
+        <h1 class="text-4xl font-extrabold leading-[1.15] text-neutral-900 md:text-6xl">
+          {t.home.heroTitle}
+          <span class="text-primary-600 relative inline-block">
+            {t.home.heroTitleAccent}
+            <svg
+              aria-hidden
+              class="text-secondary-400 absolute -bottom-2 start-0 w-full"
+              viewBox="0 0 200 9"
+              fill="none"
+              preserveAspectRatio="none"
+            >
+              <path d="M2 7C50 2 150 2 198 6" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+            </svg>
+          </span>
+        </h1>
+
+        <p class="max-w-xl text-lg leading-relaxed text-neutral-500">{t.home.heroBody}</p>
+
+        <div class="mt-2 flex flex-wrap items-center justify-center gap-3">
+          <a href={localizePath("/projects", locale)} class={heroCta}>{t.home.browseCta}</a>
+          <a href={localizePath("/submit", locale)} class={heroGhost}>{t.home.submitCta}</a>
+        </div>
+
+        {/* stats strip — hairline separators, print style */}
+        <dl class="mt-6 flex flex-wrap items-stretch justify-center gap-x-8 gap-y-4">
+          {
+            stats.map((stat, i) => (
+              <div
+                class:list={[
+                  "flex flex-col gap-0.5",
+                  i > 0 && "border-s !border-neutral-200 ps-8",
+                ]}
+              >
+                <dd class="text-primary-600 text-3xl font-extrabold tabular-nums">{stat.value}</dd>
+                <dt class="text-sm text-neutral-500">{stat.label}</dt>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      {/* floating featured mini-cards — print-block offsets, slight fan */}
+      {
+        heroCards.length > 0 && (
+          <div class="relative hidden min-h-[22rem] lg:block" aria-hidden>
+            {heroCards.map((project, i) => (
+              <div
+                class:list={[
+                  "rounded-card absolute w-72 border !border-neutral-300 bg-white p-4 shadow-lg",
+                  i === 0 && "top-2 end-8 z-30 -rotate-2",
+                  i === 1 && "top-28 end-36 z-20 rotate-1",
+                  i === 2 && "top-56 end-4 z-10 rotate-3",
+                ]}
+              >
+                <div class="flex items-center gap-3">
+                  {project.ownerAvatarUrl ? (
+                    <img
+                      src={project.ownerAvatarUrl}
+                      alt=""
+                      loading="lazy"
+                      class="size-8 rounded-full border !border-neutral-200"
+                    />
+                  ) : (
+                    <span class="bg-primary-50 text-primary-600 flex size-8 items-center justify-center rounded-full text-sm font-bold">
+                      {project.ownerLogin.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-bold text-neutral-900">{project.name}</p>
+                    <p dir="ltr" class="truncate text-start text-xs text-neutral-400">
+                      {project.repoFullName}
+                    </p>
+                  </div>
+                  <span class="ms-auto flex shrink-0 items-center gap-1 text-xs font-semibold text-neutral-700">
+                    <RatingStarIcon className="fill-warning-400 size-3.5" />
+                    {compactCount(project.stars)}
+                  </span>
+                </div>
+                {project.description && (
+                  <p class="mt-2 line-clamp-2 text-xs leading-relaxed text-neutral-500">
+                    {project.description}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  {/* How it works — three numbered print cards */}
+  <section class="mx-auto w-full max-w-7xl px-6 py-16 md:py-20">
+    <div class="mb-10 max-w-2xl">
+      <h2 class="mb-2 text-2xl font-bold text-neutral-900 md:text-3xl">{t.home.howTitle}</h2>
+      <p class="text-neutral-500">{t.home.howBody}</p>
+    </div>
+    <ol class="grid grid-cols-1 gap-5 md:grid-cols-3">
+      {
+        t.home.howSteps.map((step, i) => (
+          <li class="rounded-card relative border !border-neutral-200 bg-white p-6 shadow-sm">
+            <span class="bg-primary-500 absolute -top-4 start-6 flex size-8 items-center justify-center rounded-full text-sm font-extrabold text-white">
+              {(i + 1).toLocaleString(numLocale)}
+            </span>
+            <h3 class="mb-2 mt-2 text-lg font-bold text-neutral-900">{step.title}</h3>
+            <p class="text-sm leading-relaxed text-neutral-500">{step.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  {/* Showcase — featured when curated, top-starred otherwise */}
+  {
+    showcase.length > 0 && (
+      <section class="border-y !border-neutral-200 bg-white">
+        <div class="mx-auto w-full max-w-7xl px-6 py-16">
+          <div class="mb-8 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 class="mb-1 text-2xl font-bold text-neutral-900 md:text-3xl">
+                {showcaseTitle}
+              </h2>
+              <p class="text-neutral-500">{showcaseBody}</p>
+            </div>
+            <a
+              href={localizePath("/projects", locale)}
+              class="text-primary-600 hover:text-primary-700 font-semibold"
+            >
+              {t.home.viewAll}
+            </a>
+          </div>
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {showcase.slice(0, 6).map((project) => (
+              <ProjectCard project={project} locale={locale} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {/* Submit band */}
+  <section class="mx-auto w-full max-w-7xl px-6 py-16 md:py-20">
+    <div class="rounded-card from-primary-500 to-primary-700 relative overflow-hidden bg-linear-to-br px-8 py-14 text-center text-white md:py-16">
+      <div
+        aria-hidden
+        class="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
+        style={{ backgroundImage: NOISE_BG }}
+      >
+      </div>
+      <div class="relative">
+        <GithubIcon className="mx-auto mb-4 size-10 fill-white/90" />
+        <h2 class="mb-3 text-2xl font-bold md:text-3xl">{t.home.submitBandTitle}</h2>
+        <p class="mx-auto mb-8 max-w-xl text-primary-50/90">{t.home.submitBandBody}</p>
+        <a
+          href={localizePath("/submit", locale)}
+          class={cn(buttonVariants({ variant: "secondary-solid", size: "lg" }), "px-10")}
+        >
+          {t.home.submitCta}
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>

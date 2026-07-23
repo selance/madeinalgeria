@@ -1,0 +1,219 @@
+@theme inline {
+  --font-sans: var(--font-graphik);
+}
+
+@theme {
+  /* "Print block" shadows: flat, zero-blur vertical offsets in warm ink.
+     Surfaces look laid on paper, not floating — depth = hairline border
+     + one hard offset, never a soft glow. */
+  --shadow-2xs: 0 1px 0 oklch(0.17 0.007 80 / 6%);
+  --shadow-xs: 0 1px 0 oklch(0.17 0.007 80 / 8%);
+  --shadow-sm: 0 2px 0 oklch(0.17 0.007 80 / 8%);
+  --shadow-md: 0 3px 0 oklch(0.17 0.007 80 / 8%);
+  --shadow-lg: 0 4px 0 oklch(0.17 0.007 80 / 9%);
+  --shadow-xl: 0 6px 0 oklch(0.17 0.007 80 / 10%);
+  --shadow-2xl: 0 8px 0 oklch(0.17 0.007 80 / 12%);
+  --inset-shadow-input: inset 0 1px 2px hsl(0 0% 0% / 4%);
+  --drop-shadow-default: 0 2px 0 hsl(0 0% 0% / 6%);
+  --drop-shadow-default-sm: 0 1px 0 hsl(0 0% 0% / 6%);
+  --drop-shadow-default-inner: 0 1px 2px hsl(0 0% 0% / 3%) inset;
+  --drop-shadow-default-input: 0 1px 2px hsl(0 0% 0% / 4%) inset;
+  --drop-shadow-xs: 0 1px 0 oklch(0.17 0.007 80 / 6%);
+  --drop-shadow-sm: 0 1px 0 oklch(0.17 0.007 80 / 8%);
+  --drop-shadow-md: 0 2px 0 oklch(0.17 0.007 80 / 8%);
+  --drop-shadow-lg: 0 3px 0 oklch(0.17 0.007 80 / 9%);
+  --drop-shadow-xl: 0 4px 0 oklch(0.17 0.007 80 / 10%);
+  --drop-shadow-2xl: 0 6px 0 oklch(0.17 0.007 80 / 12%);
+
+  /* Crisp editorial radii: 6px controls, 12px cards */
+  --radius: 6px;
+  --radius-card: 12px;
+
+  /* Extended Font Sizes */
+  --text-7\.5xl: 5.5rem;
+  --text-7\.5xl--line-height: 1;
+  --text-10xl: 10rem;
+  --text-10xl--line-height: 1;
+  --text-11xl: 12rem;
+  --text-11xl--line-height: 1;
+  --text-12xl: 14rem;
+  --text-12xl--line-height: 1;
+  --text-14xl: 18rem;
+  --text-14xl--line-height: 1;
+  --text-16xl: 24rem;
+  --text-16xl--line-height: 1;
+  --text-20xl: 30rem;
+  --text-20xl--line-height: 1;
+
+  /* Custom Breakpoints */
+  --breakpoint-xs: 23.75rem; /* 380px */
+  --breakpoint-xxl: 87.5rem; /* 1400px */
+
+  /* Default Border Radius (bare `rounded` utility) */
+  --radius-DEFAULT: 6px;
+
+  /* Custom Colors — editorial "print on paper" palette.
+     Neutrals are warm paper (hue 80, near-zero chroma); primary is deep
+     pine green; secondary is a muted steel-blue accent.
+     Rebrand = swap these scales. */
+  /* Neutral Colors (paper) */
+  --color-neutral-50:  oklch(0.98 0.005 80);
+  --color-neutral-100: oklch(0.95 0.006 80);
+  --color-neutral-200: oklch(0.90 0.008 80);
+  --color-neutral-300: oklch(0.83 0.009 80);
+  --color-neutral-400: oklch(0.68 0.010 80);
+  --color-neutral-500: oklch(0.53 0.010 80);
+  --color-neutral-600: oklch(0.44 0.010 80);
+  --color-neutral-700: oklch(0.36 0.010 80);
+  --color-neutral-800: oklch(0.29 0.009 80);
+  --color-neutral-900: oklch(0.23 0.008 80);
+  --color-neutral-950: oklch(0.17 0.007 80);
+
+  /* Primary Colors (deep pine green) */
+  --color-primary-50: oklch(0.97 0.02 160);
+  --color-primary-100: oklch(0.93 0.04 160);
+  --color-primary-200: oklch(0.86 0.06 160);
+  --color-primary-300: oklch(0.77 0.08 160);
+  --color-primary-400: oklch(0.60 0.09 160);
+  --color-primary-500: oklch(0.45 0.09 160);
+  --color-primary-600: oklch(0.40 0.085 160);
+  --color-primary-700: oklch(0.35 0.08 160);
+  --color-primary-800: oklch(0.30 0.07 160);
+  --color-primary-900: oklch(0.25 0.06 160);
+  --color-primary-950: oklch(0.20 0.05 160);
+
+
+  --color-light-secondary: hsl(215, 25%, 94%);
+  /* Secondary Colors (steel-blue accent) */
+  --color-secondary-50: oklch(0.97 0.015 240);
+  --color-secondary-100: oklch(0.93 0.03 240);
+  --color-secondary-200: oklch(0.86 0.05 240);
+  --color-secondary-300: oklch(0.78 0.07 240);
+  --color-secondary-400: oklch(0.66 0.08 240);
+  --color-secondary-500: oklch(0.55 0.09 240);
+  --color-secondary-600: oklch(0.48 0.085 240);
+  --color-secondary-700: oklch(0.41 0.075 240);
+  --color-secondary-800: oklch(0.35 0.06 240);
+  --color-secondary-900: oklch(0.29 0.05 240);
+  --color-secondary-950: oklch(0.23 0.04 240);
+
+  /* Semantic scales — muted "print" chroma so they read as annotations
+     on paper, not neon. */
+  /* Success Colors */
+  --color-success-50: oklch(0.97 0.03 140);
+  --color-success-100: oklch(0.92 0.06 140);
+  --color-success-200: oklch(0.85 0.09 140);
+  --color-success-300: oklch(0.78 0.11 140);
+  --color-success-400: oklch(0.70 0.13 140);
+  --color-success-500: oklch(0.60 0.14 140);
+  --color-success-600: oklch(0.52 0.13 140);
+  --color-success-700: oklch(0.45 0.11 140);
+  --color-success-800: oklch(0.38 0.09 140);
+  --color-success-900: oklch(0.32 0.08 140);
+  --color-success-950: oklch(0.26 0.06 140);
+
+  /* Error Colors */
+  --color-error-50: oklch(0.96 0.02 28);
+  --color-error-100: oklch(0.92 0.05 28);
+  --color-error-200: oklch(0.85 0.08 28);
+  --color-error-300: oklch(0.77 0.12 28);
+  --color-error-400: oklch(0.68 0.17 28);
+  --color-error-500: oklch(0.58 0.20 28);
+  --color-error-600: oklch(0.51 0.18 28);
+  --color-error-700: oklch(0.44 0.15 28);
+  --color-error-800: oklch(0.37 0.12 28);
+  --color-error-900: oklch(0.31 0.10 28);
+  --color-error-950: oklch(0.25 0.08 28);
+
+  /* Warning Colors */
+  --color-warning-50: oklch(0.97 0.03 80);
+  --color-warning-100: oklch(0.93 0.06 80);
+  --color-warning-200: oklch(0.88 0.09 80);
+  --color-warning-300: oklch(0.82 0.11 80);
+  --color-warning-400: oklch(0.76 0.13 80);
+  --color-warning-500: oklch(0.70 0.14 80);
+  --color-warning-600: oklch(0.60 0.13 80);
+  --color-warning-700: oklch(0.51 0.11 80);
+  --color-warning-800: oklch(0.42 0.09 80);
+  --color-warning-900: oklch(0.35 0.08 80);
+  --color-warning-950: oklch(0.28 0.06 80);
+
+  /* Info Colors (sky-cyan — kept away from the steel-blue secondary at 240) */
+  --color-info-50: oklch(0.97 0.02 205);
+  --color-info-100: oklch(0.93 0.04 205);
+  --color-info-200: oklch(0.86 0.06 205);
+  --color-info-300: oklch(0.78 0.08 205);
+  --color-info-400: oklch(0.68 0.10 205);
+  --color-info-500: oklch(0.58 0.12 205);
+  --color-info-600: oklch(0.50 0.11 205);
+  --color-info-700: oklch(0.43 0.10 205);
+  --color-info-800: oklch(0.36 0.08 205);
+  --color-info-900: oklch(0.30 0.07 205);
+  --color-info-950: oklch(0.24 0.05 205);
+
+  /* Emerald Colors */
+  --color-emerald-50: oklch(0.97 0.03 165);
+  --color-emerald-100: oklch(0.93 0.05 165);
+  --color-emerald-200: oklch(0.86 0.08 165);
+  --color-emerald-300: oklch(0.78 0.10 165);
+  --color-emerald-400: oklch(0.69 0.12 165);
+  --color-emerald-500: oklch(0.60 0.13 165);
+  --color-emerald-600: oklch(0.52 0.12 165);
+  --color-emerald-700: oklch(0.45 0.10 165);
+  --color-emerald-800: oklch(0.38 0.09 165);
+  --color-emerald-900: oklch(0.32 0.07 165);
+  --color-emerald-950: oklch(0.26 0.06 165);
+
+  /* Custom Animations */
+  --animate-star-dance: star 2s alternate ease-out infinite;
+  --animate-star-dance-1: star 2s alternate ease-out infinite;
+  --animate-star-dance-2: star 1s alternate ease-out infinite;
+  --animate-star-dance-3: star 3s alternate ease-out infinite;
+  --animate-star-dance-4: star 4s alternate ease-out infinite;
+  --animate-slow-spin: slow 10s alternate ease-out infinite;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  /* Custom Keyframes */
+  @keyframes slow {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(360deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+
+  @keyframes star {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0);
+    }
+  }
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}

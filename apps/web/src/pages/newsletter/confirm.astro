@@ -1,0 +1,97 @@
+---
+/**
+ * Newsletter double opt-in — the landing page for the emailed confirm link.
+ *
+ * The confirmation runs on POST only, behind a real button: email clients and
+ * security scanners prefetch links, and a GET-side mutation would let them
+ * confirm a subscription the recipient never agreed to. Zero client JS.
+ */
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { apiPost } from "../../lib/api";
+
+const token = Astro.url.searchParams.get("token") ?? "";
+const env = Astro.locals.runtime?.env;
+
+type State = "confirm" | "done" | "invalid" | "error";
+let state: State = token ? "confirm" : "invalid";
+
+if (Astro.request.method === "POST" && token) {
+  const res = await apiPost<{ status: string }>(env, "/v1/newsletter/confirm", { token });
+  if (res.ok) {
+    state = "done";
+  } else if (res.status === 400) {
+    state = "invalid";
+    Astro.response.status = 400;
+  } else {
+    state = "error";
+    Astro.response.status = 502;
+  }
+}
+---
+
+<Base locale="ar" title="تأكيد الاشتراك في النشرة - صُنع في الجزائر" description="أكّد اشتراكك في النشرة الإخبارية لمنصة صُنع في الجزائر." noindex>
+  <section class="mx-auto flex min-h-[60vh] w-full max-w-7xl items-center justify-center px-6 py-24">
+    <div class="rounded-card w-full max-w-md bg-white p-8 text-center drop-shadow-default">
+      {
+        state === "confirm" && (
+          <>
+            <h1 class="mb-3 text-2xl font-bold text-neutral-800">تأكيد الاشتراك</h1>
+            <p class="mb-6 leading-relaxed text-neutral-500">
+              اضغط على الزر لتأكيد اشتراكك في النشرة الإخبارية لمنصة صُنع في الجزائر.
+            </p>
+            <form method="post">
+              <button
+                type="submit"
+                class="bg-primary-500 hover:bg-primary-600 w-full cursor-pointer rounded-lg px-6 py-3 font-medium text-white transition-colors"
+              >
+                تأكيد الاشتراك
+              </button>
+            </form>
+          </>
+        )
+      }
+      {
+        state === "done" && (
+          <>
+            <h1 class="mb-3 text-2xl font-bold text-neutral-800">تم تأكيد اشتراكك</h1>
+            <p class="mb-6 leading-relaxed text-neutral-500">
+              ستصلك من الآن آخر التحديثات على منصة صُنع في الجزائر.
+            </p>
+            <a href="/" class="text-primary-600 font-medium hover:underline">
+              العودة إلى الرئيسية
+            </a>
+          </>
+        )
+      }
+      {
+        state === "invalid" && (
+          <>
+            <h1 class="mb-3 text-2xl font-bold text-neutral-800">الرابط غير صالح</h1>
+            <p class="mb-6 leading-relaxed text-neutral-500">
+              هذا الرابط غير صحيح أو انتهت صلاحيته. يمكنك الاشتراك من جديد عبر النموذج في أسفل الصفحة
+              الرئيسية.
+            </p>
+            <a href="/" class="text-primary-600 font-medium hover:underline">
+              اشترك من جديد
+            </a>
+          </>
+        )
+      }
+      {
+        state === "error" && (
+          <>
+            <h1 class="mb-3 text-2xl font-bold text-neutral-800">تعذّر إتمام العملية</h1>
+            <p class="mb-6 leading-relaxed text-neutral-500">
+              حدث خطأ غير متوقع. حاول مرة أخرى بعد قليل.
+            </p>
+            <a href="/" class="text-primary-600 font-medium hover:underline">
+              العودة إلى الرئيسية
+            </a>
+          </>
+        )
+      }
+    </div>
+  </section>
+</Base>

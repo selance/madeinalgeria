@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // "node" is for the build/preview scripts only — nothing under src/ may use
+    // a Node builtin; this package's code runs inside a Worker.
+    "types": ["node"]
+  },
+  "include": ["src", "emails", "scripts"]
+}

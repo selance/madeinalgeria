@@ -1,0 +1,7 @@
+---
+import HomePage from "../components/pages/HomePage.astro";
+// Featured grid + stats come from the API per request (KV-cached upstream).
+export const prerender = false;
+---
+
+<HomePage locale="en" />

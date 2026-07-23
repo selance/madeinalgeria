@@ -1,0 +1,43 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mia-web",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "workers_dev": false,
+  "vars": {
+    "ENVIRONMENT": "dev",
+    // Server-side fetches (directory pages, newsletter confirm/unsubscribe) hit
+    // the local miniflare API in dev (`pnpm dev:api`).
+    "PUBLIC_API_BASE": "http://localhost:8787",
+    "APP_BASE_URL": "http://localhost:5173",
+    "SITE_URL": "http://localhost:4321"
+  },
+  "env": {
+    "staging": {
+      "workers_dev": true,
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "PUBLIC_API_BASE": "https://mia-api-staging.<CF_SUBDOMAIN>.workers.dev",
+        "APP_BASE_URL": "https://mia-app-staging.<CF_SUBDOMAIN>.workers.dev",
+        "SITE_URL": "https://mia-web-staging.<CF_SUBDOMAIN>.workers.dev"
+      }
+    },
+    "production": {
+      "workers_dev": false,
+      // Attach the custom domains at cutover (Workers routes):
+      "routes": [{ "pattern": "www.madeinalgeria.dev", "custom_domain": true }, { "pattern": "madeinalgeria.dev", "custom_domain": true }],
+      "vars": {
+        "ENVIRONMENT": "production",
+        "PUBLIC_API_BASE": "https://api.madeinalgeria.dev",
+        "APP_BASE_URL": "https://app.madeinalgeria.dev",
+        "SITE_URL": "https://www.madeinalgeria.dev"
+      }
+    }
+  }
+}

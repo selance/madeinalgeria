@@ -1,0 +1,152 @@
+.border,
+.border-t,
+.border-b,
+.border-l,
+.border-r {
+  border-color: var(--color-neutral-100);
+}
+
+/* Specify the width and color of the scrollbar */
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Handle of the scrollbar */
+*::-webkit-scrollbar-thumb {
+  background-color: #dbdbdb;
+  border-radius: 5px;
+}
+
+/* Track of the scrollbar */
+*::-webkit-scrollbar-track {
+  background-color: #fff;
+}
+
+/* Specify the width and color of the scrollbar for Firefox */
+/* Note: Firefox supports scrollbar styling using `scrollbar-color` and `scrollbar-width` properties */
+/* For simplicity, this example assumes Firefox 64 and later versions that support these properties */
+/* For older versions of Firefox, you may need to use -moz properties */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #dbdbdb #fff;
+}
+
+/* Specify the width and color of the scrollbar for Internet Explorer and Edge */
+/* Note: This example assumes Microsoft Edge Chromium or later versions */
+/* For Internet Explorer, you may need to use -ms properties */
+*::-ms-scrollbar {
+  width: 6px;
+}
+
+*::-ms-thumb {
+  background-color: #dbdbdb;
+  border-radius: 5px;
+}
+
+*::-ms-track {
+  background-color: #fff;
+}
+
+.Toast {
+  z-index: calc(1000 - var(--toast-index));
+  transform: scale(1 - calc(0.1 * var(--toast-index)));
+}
+
+.Toast[data-expanded] {
+  transform: translateY(var(--toast-offset-y));
+}
+
+.Toast {
+  transform: scale(1 - calc(0.1 * var(--toast-index))) + translateX(var(--toast-swipe-movement-x)) +
+    translateY(calc(var(--toast-swipe-movement-y) + (var(--toast-index) * -20%)));
+}
+
+&[data-ending-style] {
+  opacity: 0;
+
+  &[data-swipe-direction="up"] {
+    transform: translateY(calc(var(--toast-swipe-movement-y) - 150%));
+  }
+  &[data-swipe-direction="down"] {
+    transform: translateY(calc(var(--toast-swipe-movement-y) + 150%));
+  }
+  &[data-swipe-direction="left"] {
+    transform: translateX(calc(var(--toast-swipe-movement-x) - 150%)) translateY(var(--offset-y));
+  }
+  &[data-swipe-direction="right"] {
+    transform: translateX(calc(var(--toast-swipe-movement-x) + 150%)) translateY(var(--offset-y));
+  }
+}
+
+
+
+
+.Toast {
+  --gap: 0.75rem;
+  --offset-y: calc(
+    var(--toast-offset-y) * -1 + (var(--toast-index) * var(--gap) * -1) +
+      var(--toast-swipe-movement-y)
+  );
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  box-sizing: border-box;
+  width: 100%;
+  background-clip: padding-box;
+  bottom: 0;
+  left: auto;
+  margin-right: 0;
+  -webkit-user-select: none;
+  user-select: none;
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.5s;
+  cursor: default;
+  z-index: calc(1000 - var(--toast-index));
+  transform: translateX(var(--toast-swipe-movement-x))
+    translateY(calc(var(--toast-swipe-movement-y) + (min(var(--toast-index), 10) * -20%)))
+    scale(calc(max(0, 1 - (var(--toast-index) * 0.1))));
+
+  &::after {
+    top: 100%;
+  }
+
+  &[data-expanded] {
+    transform: translateX(var(--toast-swipe-movement-x)) translateY(var(--offset-y));
+  }
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    transform: translateY(150%);
+  }
+
+  &[data-limited] {
+    opacity: 0;
+  }
+
+  &[data-ending-style] {
+    opacity: 0;
+
+    &[data-swipe-direction='up'] {
+      transform: translateY(calc(var(--toast-swipe-movement-y) - 150%));
+    }
+    &[data-swipe-direction='left'] {
+      transform: translateX(calc(var(--toast-swipe-movement-x) - 150%)) translateY(var(--offset-y));
+    }
+    &[data-swipe-direction='right'] {
+      transform: translateX(calc(var(--toast-swipe-movement-x) + 150%)) translateY(var(--offset-y));
+    }
+    &[data-swipe-direction='down'] {
+      transform: translateY(calc(var(--toast-swipe-movement-y) + 150%));
+    }
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    left: 0;
+    height: calc(var(--gap) + 1px);
+  }
+}

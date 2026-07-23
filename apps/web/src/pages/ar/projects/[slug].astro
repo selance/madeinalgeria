@@ -1,0 +1,11 @@
+---
+import ProjectDetailPage from "../../../components/pages/ProjectDetailPage.astro";
+import { loadProject } from "../../../lib/projects";
+export const prerender = false;
+
+const { slug = "" } = Astro.params;
+const { project, status } = await loadProject(Astro.locals.runtime?.env, slug);
+Astro.response.status = status;
+---
+
+<ProjectDetailPage locale="ar" slug={slug} project={project} />

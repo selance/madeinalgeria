@@ -54,11 +54,14 @@ interface Contributor {
 }
 const contributors = await (async (): Promise<Contributor[]> => {
   try {
-    // Direct fetch (GitHub caps unauth at 60/hr per IP). Fine at launch traffic;
-    // move behind a KV-cached API endpoint if the landing gets heavy.
+    // Edge-cached (30 min) so the landing rarely calls GitHub, and hard-capped
+    // at 2s: GitHub latency must NEVER block or hang the page — on timeout or
+    // any error we just render without the avatar wall.
     const res = await fetch(GITHUB_CONTRIBUTORS_API, {
       headers: { "User-Agent": "madeinalgeria-web", Accept: "application/vnd.github+json" },
-    });
+      signal: AbortSignal.timeout(2000),
+      cf: { cacheTtl: 1800 },
+    } as RequestInit);
     if (!res.ok) return [];
     const data = (await res.json()) as Contributor[];
     return Array.isArray(data) ? data.filter((c) => c.type !== "Bot") : [];
@@ -304,9 +307,11 @@ const stats = [
                   </a>
                 ))}
               </div>
-              <p class="text-sm text-neutral-400">
-                {contributors.length.toLocaleString(numLocale)} {t.home.contributorsWord}
-              </p>
+              {contributors.length > 1 && (
+                <p class="text-sm text-neutral-400">
+                  {contributors.length.toLocaleString(numLocale)} {t.home.contributorsWord}
+                </p>
+              )}
             </div>
           )
         }

@@ -53,6 +53,7 @@
       },
       "vars": {
         "ENVIRONMENT": "staging",
+        "ADMIN_ALLOWLIST": "moncef@mochir.com",
         "AUTH_BASE_URL": "https://mia-admin-api-staging.<CF_SUBDOMAIN>.workers.dev",
         "TRUSTED_ORIGINS": "http://localhost:3000,http://localhost:5174,https://mia-admin-web-staging.<CF_SUBDOMAIN>.workers.dev,https://admin-staging.madeinalgeria.dev",
         "WEB_BASE_URL": "https://staging.madeinalgeria.dev",
@@ -98,9 +99,9 @@
       },
       "vars": {
         "ENVIRONMENT": "production",
-        // Set to your admin login email(s), comma-separated, to enforce the
-        // allowlist backstop in requireAdmin. Unset → role check alone.
-        // "ADMIN_ALLOWLIST": "you@example.com",
+        // Allowlist backstop in requireAdmin — comma-separated admin login
+        // emails. A user must be here even if their role column says "admin".
+        "ADMIN_ALLOWLIST": "moncef@mochir.com",
         "AUTH_BASE_URL": "https://admin-api.madeinalgeria.dev",
         "TRUSTED_ORIGINS": "https://admin.madeinalgeria.dev",
         "APP_BASE_URL": "https://app.madeinalgeria.dev",

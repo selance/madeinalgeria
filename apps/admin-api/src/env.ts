@@ -8,6 +8,12 @@ export interface Bindings {
   TRUSTED_ORIGINS: string;
   /** Apex domain for cross-subdomain cookies (production only, when set). */
   COOKIE_DOMAIN?: string;
+  /**
+   * Comma-separated allowlist of admin login emails. When set, a user must be
+   * on this list even if their role is "admin" (hard backstop). Leave unset to
+   * fall back to the role check alone — see requireAdmin.
+   */
+  ADMIN_ALLOWLIST?: string;
   /** Public origin of the dashboard SPA — email CTA links point here. */
   APP_BASE_URL?: string;
   /** Public origin of the site — unsubscribe links in bulk mail point here. */
@@ -30,6 +36,10 @@ export interface Bindings {
   DB_CORE: D1Database;
   KV: KVNamespace;
   JOBS: Queue<Job>;
+  /** Coarse per-IP burst cap for the whole admin surface — staging/production only. */
+  RATE_LIMITER?: RateLimit;
+  /** Tight per-IP cap on sign-in — blunts password brute-force / spraying. */
+  ADMIN_LOGIN_RATE_LIMITER?: RateLimit;
 }
 
 const varsSchema = z.object({
@@ -39,6 +49,14 @@ const varsSchema = z.object({
     .string()
     .transform((s) => s.split(",").map((o) => o.trim()).filter(Boolean)),
   COOKIE_DOMAIN: z.string().optional(),
+  ADMIN_ALLOWLIST: z
+    .string()
+    .optional()
+    .transform((s) =>
+      s
+        ? s.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)
+        : [],
+    ),
   AUTH_SECRET: z.string().min(32),
 });
 

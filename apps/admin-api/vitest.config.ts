@@ -43,6 +43,7 @@ export default defineConfig(async () => {
             // Injected only for tests; setup file applies them per test run.
             TEST_CORE_MIGRATIONS: coreMigrations,
             AUTH_SECRET: "test-only-secret-at-least-32-characters-long",
+            ADMIN_ALLOWLIST: "gate@example.com,verify@example.com",
             NODE_ENV: "production",
           },
         },

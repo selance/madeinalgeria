@@ -33,6 +33,24 @@
   "env": {
     "staging": {
       "workers_dev": true,
+      // Per-IP brute-force protection. Coarse burst cap for the whole surface +
+      // a tight cap on sign-in. Not bound in dev/tests (middleware no-ops).
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2010",
+            "simple": { "limit": 120, "period": 60 }
+          },
+          {
+            "name": "ADMIN_LOGIN_RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2011",
+            "simple": { "limit": 5, "period": 60 }
+          }
+        ]
+      },
       "vars": {
         "ENVIRONMENT": "staging",
         "AUTH_BASE_URL": "https://mia-admin-api-staging.<CF_SUBDOMAIN>.workers.dev",
@@ -61,8 +79,28 @@
       "workers_dev": false,
       // Custom domain at cutover — fill in the real hostname:
       "routes": [{ "pattern": "admin-api.madeinalgeria.dev", "custom_domain": true }],
+      // Per-IP brute-force protection (see staging).
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2012",
+            "simple": { "limit": 120, "period": 60 }
+          },
+          {
+            "name": "ADMIN_LOGIN_RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "2013",
+            "simple": { "limit": 5, "period": 60 }
+          }
+        ]
+      },
       "vars": {
         "ENVIRONMENT": "production",
+        // Set to your admin login email(s), comma-separated, to enforce the
+        // allowlist backstop in requireAdmin. Unset → role check alone.
+        // "ADMIN_ALLOWLIST": "you@example.com",
         "AUTH_BASE_URL": "https://admin-api.madeinalgeria.dev",
         "TRUSTED_ORIGINS": "https://admin.madeinalgeria.dev",
         "APP_BASE_URL": "https://app.madeinalgeria.dev",

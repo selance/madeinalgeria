@@ -1,0 +1,12 @@
+# Security headers for the admin dashboard (Cloudflare static-assets _headers).
+# A tight CSP is the mitigation for the bearer token living in localStorage:
+# script-src 'self' blocks injected inline script, connect-src limits where a
+# compromised page could ship the token. Verify on staging after any UI change
+# that adds a new asset origin.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.githubusercontent.com https://imagedelivery.net; font-src 'self' data:; connect-src 'self' https://admin-api.madeinalgeria.dev https://*.workers.dev; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Robots-Tag: noindex, nofollow

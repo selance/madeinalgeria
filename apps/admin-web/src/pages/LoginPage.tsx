@@ -20,7 +20,10 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
-  const redirectUrl = searchParams.get("redirect") || "/";
+  // Only honor same-origin relative paths — never an absolute/protocol-relative
+  // URL an attacker could plant in ?redirect= to bounce us off-site after login.
+  const rawRedirect = searchParams.get("redirect") || "/";
+  const redirectUrl = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
 
   const {
     register,

@@ -7,32 +7,36 @@
  */
 
 export const colors = {
-  // primary — oklch hue 254 (brand blue)
-  primary50: "#eff6ff",
-  primary100: "#d3e7ff",
-  primary400: "#50a0ff",
-  primary500: "#0672d6",
-  primary600: "#005cb1",
-  primary700: "#00498f",
-  primary900: "#00264f",
+  // primary — deep pine green (the editorial "print on paper" brand)
+  primary50: "#eafaf0",
+  primary100: "#d2f1df",
+  primary400: "#4b916e",
+  primary500: "#1a6444",
+  primary600: "#0c5537",
+  primary700: "#00472c",
+  primary800: "#003821",
+  primary900: "#002a17",
 
-  // secondary — the warm "sunset" accent
-  secondary300: "#f7aa6c",
-  secondary500: "#fa8a00",
+  // secondary — muted steel-blue accent
+  secondary300: "#8fbee0",
+  secondary500: "#3a78a1",
+  secondary600: "#296389",
 
-  // neutrals
+  // neutrals — warm paper
   white: "#ffffff",
-  neutral50: "#fafafa",
-  neutral100: "#eff0f0",
-  neutral200: "#dfe0e2",
-  neutral400: "#a4a5a8",
-  neutral500: "#6e7072",
-  neutral600: "#4d4f51",
-  neutral700: "#393a3c",
-  neutral800: "#2d2e2f",
+  neutral50: "#faf8f5",
+  neutral100: "#f1eeea",
+  neutral200: "#e1ddd8",
+  neutral400: "#9b9891",
+  neutral500: "#6f6b65",
+  neutral600: "#55524c",
+  neutral700: "#403d37",
+  neutral800: "#2e2b26",
+  neutral900: "#1f1d19",
 
-  success500: "#56ac51",
-  error500: "#ff4c41",
+  success500: "#4e943e",
+  error500: "#d7352d",
+  error50: "#fdeceb",
 } as const;
 
 /**
@@ -44,13 +48,13 @@ export const fontFamily =
   "'Almarai', 'Segoe UI', Tahoma, Helvetica, Arial, sans-serif";
 
 export const radius = {
-  button: "10px", // --radius
-  card: "20px", // --radius-card
-  panel: "10px",
+  button: "6px", // --radius (controls)
+  card: "12px", // --radius-card
+  panel: "8px",
 } as const;
 
-/** The brand's blue-tinted shadow (--shadow-*, primary-900 at 5%). */
-export const shadow = "0 2px 4px rgba(0, 38, 79, 0.05)";
+/** Flat "print block" offset — the design system uses hard, zero-blur offsets, never soft glows (warm-ink shadow). */
+export const shadow = "0 2px 0 rgba(17,15,12,0.08)";
 
 export const spacing = {
   card: "32px",

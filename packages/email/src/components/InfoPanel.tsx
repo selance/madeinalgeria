@@ -4,7 +4,7 @@ import { colors, radius } from "../theme";
 
 /**
  * The quoted-content surface: message previews, reviewer notes, security
- * details. neutral-50 on white, 10px radius — the design system's panel.
+ * details. neutral-50 on white, hairline border, 8px radius — the design system's panel.
  */
 export function InfoPanel({ children }: { children: ReactNode }) {
   return (

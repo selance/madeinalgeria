@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import ProjectCard, { compactCount } from "../react/ProjectCard";
-import { SITE, SITE_NAME } from "../../lib/site";
+import { GITHUB_CONTRIBUTORS_API, GITHUB_URL, SITE, SITE_NAME } from "../../lib/site";
 import { apiGet } from "../../lib/api";
 import { localizePath, ui, type Locale } from "../../lib/i18n";
 import { buttonVariants, cn } from "@mia/ui";
@@ -43,8 +43,29 @@ const NOISE_BG =
 const heroCta = cn(buttonVariants({ size: "lg" }), "px-8");
 const heroGhost = cn(buttonVariants({ variant: "dark-outline", size: "lg" }), "px-8");
 
-/** Public repo — the "star us" CTA target. Works once the repo is public. */
-const GITHUB_URL = "https://github.com/selance/madeinalgeria";
+// Contributors for the open-source section — fetched server-side, edge-cached
+// (cf.cacheTtl), and tolerant of failure. Empty while the repo is private; the
+// section still renders its heading + star CTA, just without the avatar wall.
+interface Contributor {
+  login: string;
+  avatar_url: string;
+  html_url: string;
+  type?: string;
+}
+const contributors = await (async (): Promise<Contributor[]> => {
+  try {
+    const init = {
+      headers: { "User-Agent": "madeinalgeria-web", Accept: "application/vnd.github+json" },
+      cf: { cacheTtl: 3600, cacheEverything: true },
+    };
+    const res = await fetch(GITHUB_CONTRIBUTORS_API, init as RequestInit);
+    if (!res.ok) return [];
+    const data = (await res.json()) as Contributor[];
+    return Array.isArray(data) ? data.filter((c) => c.type !== "Bot") : [];
+  } catch {
+    return [];
+  }
+})();
 
 // The hero's floating stack: three showcase projects as static mini-cards —
 // featured when available, top-starred otherwise, so the desktop hero's side
@@ -252,25 +273,54 @@ const stats = [
     )
   }
 
-  {/* Open source / contribute */}
+  {/* Open source / contributors */}
   <section class="mx-auto w-full max-w-7xl px-6 pt-16 md:pt-20">
-    <div class="rounded-card border !border-neutral-200 bg-white px-8 py-12 text-center md:py-14">
-      <span
-        class="border-primary-100 bg-primary-50 mb-5 inline-flex size-14 items-center justify-center rounded-full border"
+    <div class="rounded-card relative overflow-hidden bg-neutral-950 px-6 py-14 text-center md:px-12 md:py-16">
+      <div
+        aria-hidden
+        class="pointer-events-none absolute inset-0 opacity-[0.15] mix-blend-screen"
+        style={{ backgroundImage: NOISE_BG }}
       >
-        <GithubIcon className="fill-primary-600 size-7" />
-      </span>
-      <h2 class="mb-3 text-2xl font-bold text-neutral-900 md:text-3xl">{t.home.contribTitle}</h2>
-      <p class="mx-auto mb-8 max-w-2xl text-neutral-500">{t.home.contribBody}</p>
-      <a
-        href={GITHUB_URL}
-        target="_blank"
-        rel="noreferrer"
-        class={cn(buttonVariants({ size: "lg" }), "gap-2 px-8")}
-      >
-        <RatingStarIcon className="size-4 fill-white" />
-        {t.home.starCta}
-      </a>
+      </div>
+      <div class="relative mx-auto max-w-3xl">
+        <span class="text-primary-300 mb-3 inline-block text-xs font-bold uppercase tracking-widest">
+          {t.home.contribEyebrow}
+        </span>
+        <h2 class="mb-3 text-2xl font-bold text-white md:text-3xl">{t.home.contribTitle}</h2>
+        <p class="mx-auto mb-8 max-w-xl text-neutral-300">{t.home.contribBody}</p>
+
+        {
+          contributors.length > 0 && (
+            <div class="mb-9 flex flex-col items-center gap-3">
+              <div class="flex flex-wrap items-center justify-center gap-2">
+                {contributors.slice(0, 16).map((c) => (
+                  <a href={c.html_url} target="_blank" rel="noreferrer" title={c.login}>
+                    <img
+                      src={c.avatar_url}
+                      alt={c.login}
+                      loading="lazy"
+                      class="size-11 rounded-full border-2 !border-neutral-800 transition-transform hover:scale-110 hover:!border-primary-400"
+                    />
+                  </a>
+                ))}
+              </div>
+              <p class="text-sm text-neutral-400">
+                {contributors.length.toLocaleString(numLocale)} {t.home.contributorsWord}
+              </p>
+            </div>
+          )
+        }
+
+        <a
+          href={GITHUB_URL}
+          target="_blank"
+          rel="noreferrer"
+          class={cn(buttonVariants({ variant: "white-solid", size: "lg" }), "gap-2 px-8")}
+        >
+          <RatingStarIcon className="fill-warning-400 size-4" />
+          {t.home.starCta}
+        </a>
+      </div>
     </div>
   </section>
 

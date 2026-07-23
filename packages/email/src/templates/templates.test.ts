@@ -38,8 +38,8 @@ describe.each(ALL)("%s", (name, mail) => {
     expect(mail.html).toContain('dir="rtl"');
     // The plain-text wordmark rides in the branded header band.
     expect(mail.html).toContain("Made in Algeria");
-    // The brand blue, not the Tailwind default the old templates shipped.
-    expect(mail.html).toContain("#0672d6");
+    // The pine-green brand, not the Tailwind default the old templates shipped.
+    expect(mail.html).toContain("#1a6444");
     expect(mail.html).not.toContain("#1d4ed8");
   });
 

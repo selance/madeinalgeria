@@ -30,7 +30,7 @@ export const ui = {
     dir: "ltr",
     siteName: "Made in Algeria",
     tagline: "Open-source software by Algerian developers",
-    nav: { projects: "Projects", about: "About", submit: "Submit a project" },
+    nav: { projects: "Projects", about: "About", submit: "Submit a project", star: "Star" },
     switcher: { label: "العربية", aria: "التبديل إلى العربية" },
     home: {
       title: "Made in Algeria, open source by Algerian developers",
@@ -70,10 +70,12 @@ export const ui = {
       submitBandTitle: "Built something?",
       submitBandBody:
         "If you're an Algerian developer with a public repo you're proud of, add it to the directory, it takes a minute.",
-      contribTitle: "This platform is open source",
+      contribEyebrow: "Open source",
+      contribTitle: "Built by the community, for the community",
       contribBody:
-        "Made in Algeria is built in the open. Star the repo, open an issue, or send a pull request — help us make the home of Algerian open source better.",
+        "Made in Algeria is open source. Star the repo, open an issue, or send a pull request — help build the home of Algerian open source.",
       starCta: "Star on GitHub",
+      contributorsWord: "contributors",
     },
     projects: {
       title: "Projects",
@@ -182,7 +184,7 @@ export const ui = {
     dir: "rtl",
     siteName: "صُنع في الجزائر",
     tagline: "برمجيات مفتوحة المصدر من مطوّرين جزائريين",
-    nav: { projects: "المشاريع", about: "حول", submit: "أضف مشروعاً" },
+    nav: { projects: "المشاريع", about: "حول", submit: "أضف مشروعاً", star: "نجمة" },
     switcher: { label: "English", aria: "Switch to English" },
     home: {
       title: "صُنع في الجزائر، مصادر مفتوحة من مطوّرين جزائريين",
@@ -222,10 +224,12 @@ export const ui = {
       submitBandTitle: "بنيت شيئاً؟",
       submitBandBody:
         "إن كنت مطوّراً جزائرياً ولديك مستودع عام تفخر به، أضفه إلى الدليل، الأمر لا يستغرق دقيقة.",
-      contribTitle: "هذه المنصّة مفتوحة المصدر",
+      contribEyebrow: "مفتوح المصدر",
+      contribTitle: "من المجتمع، ولأجل المجتمع",
       contribBody:
-        "«صُنع في الجزائر» مبنيّ بشكل مفتوح. ضع نجمة على المستودع، أو افتح مشكلة، أو أرسل مساهمة — ساعدنا في تحسين بيت المصادر المفتوحة الجزائرية.",
+        "«صُنع في الجزائر» مفتوح المصدر. ضع نجمة على المستودع، أو افتح مشكلة، أو أرسل مساهمة — ساعدنا في بناء بيت المصادر المفتوحة الجزائرية.",
       starCta: "ضع نجمة على GitHub",
+      contributorsWord: "مساهمون",
     },
     projects: {
       title: "المشاريع",

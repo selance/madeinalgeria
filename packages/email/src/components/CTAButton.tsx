@@ -2,7 +2,7 @@ import { Button, Section, Text } from "@react-email/components";
 import { colors, radius } from "../theme";
 
 /**
- * The design system's primary button, as far as email allows: brand blue, the
+ * The design system's primary button, as far as email allows: pine green, the
  * darker primary-700 edge, and the lighter primary-400 top border that gives the
  * real button its bevel (packages/ui/src/styles/ui/buttons.ts).
  *

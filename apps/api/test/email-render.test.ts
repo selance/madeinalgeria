@@ -40,7 +40,7 @@ describe("every email template renders inside workerd", () => {
   it.each(RENDERED)("%s", (_name, mail) => {
     expect(mail.html).toContain("<html");
     expect(mail.html).toContain("Made in Algeria");
-    expect(mail.html).toContain("#0672d6");
+    expect(mail.html).toContain("#1a6444");
     expect(mail.text.length).toBeGreaterThan(0);
   });
 });

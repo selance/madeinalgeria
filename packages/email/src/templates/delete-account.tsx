@@ -25,7 +25,7 @@ export function DeleteAccountEmail({ username, confirmationUrl }: DeleteAccountP
           padding: "12px 16px",
           borderRadius: radius.panel,
           border: `1px solid ${colors.error500}`,
-          backgroundColor: "#fff5f4",
+          backgroundColor: colors.error50,
           color: colors.neutral700,
           fontSize: "14px",
           lineHeight: "1.8",

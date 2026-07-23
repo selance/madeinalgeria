@@ -73,7 +73,7 @@ export const ui = {
       contribEyebrow: "Open source",
       contribTitle: "Built by the community, for the community",
       contribBody:
-        "Made in Algeria is open source. Star the repo, open an issue, or send a pull request — help build the home of Algerian open source.",
+        "Made in Algeria is open source. Star the repo, open an issue, or send a pull request. Help build the home of Algerian open source.",
       starCta: "Star on GitHub",
       contributorsWord: "contributors",
     },
@@ -227,7 +227,7 @@ export const ui = {
       contribEyebrow: "مفتوح المصدر",
       contribTitle: "من المجتمع، ولأجل المجتمع",
       contribBody:
-        "«صُنع في الجزائر» مفتوح المصدر. ضع نجمة على المستودع، أو افتح مشكلة، أو أرسل مساهمة — ساعدنا في بناء بيت المصادر المفتوحة الجزائرية.",
+        "«صُنع في الجزائر» مفتوح المصدر. ضع نجمة على المستودع، أو افتح مشكلة، أو أرسل مساهمة. ساعدنا في بناء بيت المصادر المفتوحة الجزائرية.",
       starCta: "ضع نجمة على GitHub",
       contributorsWord: "مساهمون",
     },
